@@ -150,7 +150,7 @@ function formatCurrency(value) {
       currency: 'IDR',
       maximumFractionDigits: 0,
     }).format(Number(value));
-  } catch (e) {
+  } catch {
     return `${value}`;
   }
 }

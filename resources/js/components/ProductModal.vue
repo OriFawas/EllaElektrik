@@ -90,7 +90,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue';
+import { ref, watch } from 'vue';
 import { useForm } from '@inertiajs/vue3';
 
 const props = defineProps({
@@ -119,7 +119,7 @@ const subkategories = ref((() => {
   return cat?.subkategories ?? [];
 })());
 
-watch(() => props.categories, (n) => {
+watch(() => props.categories, () => {
   // update subcategories when categories prop changes
   if (selectedCategoryId.value) {
     const cat = props.categories.find((c) => String(c.id) === String(selectedCategoryId.value));
