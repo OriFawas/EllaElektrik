@@ -20,13 +20,31 @@ Route::get('/admin/dashboard', function () {
 })->middleware(['auth', 'verified', 'admin'])->name('admin.dashboard');
 
 // Admin produk
+use App\Models\KategoriProduct;
+use App\Http\Controllers\Admin\ProductController;
+
 Route::get('/admin/products', function () {
     $products = Product::with(['subkategori.kategori'])->latest()->get();
+    $categories = KategoriProduct::with('subkategories')->get();
 
     return Inertia::render('Products', [
         'products' => $products,
+        'categories' => $categories,
     ]);
 })->middleware(['auth', 'verified', 'admin'])->name('admin.products');
+
+// Product CRUD (store / update / destroy)
+Route::post('/admin/products', [ProductController::class, 'store'])
+    ->middleware(['auth', 'verified', 'admin'])
+    ->name('admin.products.store');
+
+Route::put('/admin/products/{product}', [ProductController::class, 'update'])
+    ->middleware(['auth', 'verified', 'admin'])
+    ->name('admin.products.update');
+
+Route::delete('/admin/products/{product}', [ProductController::class, 'destroy'])
+    ->middleware(['auth', 'verified', 'admin'])
+    ->name('admin.products.destroy');
 
 // Shop page for logged-in users
 Route::get('/shop', function () {

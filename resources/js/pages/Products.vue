@@ -1,22 +1,41 @@
 <script setup>
 import AdminLayout from '@/layouts/AdminLayout.vue';
 import ProductTable from '@/components/ProductTable.vue';
+import { ref } from 'vue';
+import ProductModal from '@/components/ProductModal.vue';
 import { usePage } from '@inertiajs/vue3';
 
 const page = usePage();
 const products = page.props.products ?? [];
+const categories = page.props.categories ?? [];
+
+const showCreateModal = ref(false);
+const showEditModal = ref(false);
+const editingProduct = ref(null);
+
+function openCreate() {
+  showCreateModal.value = true;
+}
+
+function openEdit(product) {
+  editingProduct.value = product;
+  showEditModal.value = true;
+}
+
+function closeModal() {
+  showCreateModal.value = false;
+  showEditModal.value = false;
+  editingProduct.value = null;
+}
 </script>
 
 <template>
   <AdminLayout>
-    <div class="flex items-center justify-between mb-4">
-      <h1 class="text-2xl font-semibold text-black">Products List</h1>
-      <button class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
-        + Add Product
-      </button>
-    </div>
+    <ProductTable :products="products" @open-create="openCreate" @open-full="openEdit" />
 
-    <ProductTable :products="products" />
+    <ProductModal v-if="showCreateModal" :categories="categories" mode="create" @close="closeModal" />
+
+    <ProductModal v-if="showEditModal" :categories="categories" :product="editingProduct" mode="edit" @close="closeModal" />
   </AdminLayout>
 </template>
 
