@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
+use App\Models\Product;
 
 Route::get('/', function () {
     return Inertia::render('Welcome');
@@ -20,7 +21,11 @@ Route::get('/admin/dashboard', function () {
 
 // Admin produk
 Route::get('/admin/products', function () {
-    return Inertia::render('Products');
+    $products = Product::with(['subkategori.kategori'])->latest()->get();
+
+    return Inertia::render('Products', [
+        'products' => $products,
+    ]);
 })->middleware(['auth', 'verified', 'admin'])->name('admin.products');
 
 // Shop page for logged-in users
