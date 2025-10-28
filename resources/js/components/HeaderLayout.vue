@@ -1,13 +1,13 @@
 <template>
-  <header class="bg-[#183045] text-white shadow-md w-full">
+  <header class="bg-[#183045] text-white shadow-md w-full fixed top-0 left-0 z-50">
     <div class="flex items-center justify-between px-12 py-4">
       <!-- Kiri: Logo + Menu -->
       <div class="flex items-center space-x-12">
-        <!-- Logo + Nama -->
-        <div class="flex items-center space-x-3">
-          <img src="/images/logoella.png" alt="Logo Ella Elektrik" class="h-12 w-auto" />
-          <span class="font-semibold text-lg tracking-wide">Ella Elektrik</span>
-        </div>
+      <!-- Logo + Nama -->
+      <Link href="/" class="flex items-center space-x-3 hover:opacity-90 transition">
+        <img src="/images/logoella.png" alt="Logo Ella Elektrik" class="h-12 w-auto" />
+        <span class="font-semibold text-lg tracking-wide">Ella Elektrik</span>
+      </Link>
 
         <!-- Menu -->
         <nav class="flex items-center space-x-8 text-base">

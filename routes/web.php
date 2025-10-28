@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use App\Models\Product;
+use App\Http\Controllers\ShopController;
 
 Route::get('/', function () {
     return Inertia::render('Welcome');
@@ -46,10 +47,9 @@ Route::delete('/admin/products/{product}', [ProductController::class, 'destroy']
     ->middleware(['auth', 'verified', 'admin'])
     ->name('admin.products.destroy');
 
-// Shop page for logged-in users
-Route::get('/shop', function () {
-    return Inertia::render('ShopPage');
-})->middleware(['auth', 'verified'])->name('shop');
+// Halaman Shop (user)
+Route::get('/shop/{category}', [ShopController::class, 'index'])
+    ->name('shop');
 
 require __DIR__.'/settings.php';
 require __DIR__.'/auth.php';
