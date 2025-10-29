@@ -1,10 +1,35 @@
 <template>
   <div class="bg-white shadow rounded-lg overflow-hidden">
-    <div class="p-4 flex justify-between items-center border-b">
-      <h2 class="text-lg font-semibold text-gray-800">Products List</h2>
-      <button @click="$emit('open-create')" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm px-4 py-2 rounded-lg font-medium flex items-center gap-1">
-        <i class="ri-add-line"></i> Add Product
-      </button>
+    <div class="p-4 flex flex-col gap-3 border-b">
+      <div class="flex justify-between items-center">
+        <h2 class="text-lg font-semibold text-gray-800">Products List</h2>
+        <button @click="$emit('open-create')" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm px-4 py-2 rounded-lg font-medium flex items-center gap-1">
+          <i class="ri-add-line"></i> Add Product
+        </button>
+      </div>
+
+      <!-- Filters -->
+      <div class="flex items-center gap-3">
+        <div class="w-64">
+          <label class="block text-sm text-gray-600">Category</label>
+          <select v-model="selectedCategoryId" class="mt-1 block w-full border rounded px-2 py-1">
+            <option value="">All Categories</option>
+            <option v-for="cat in categories" :key="cat.id" :value="cat.id">{{ cat.name }}</option>
+          </select>
+        </div>
+
+        <div class="w-64">
+          <label class="block text-sm text-gray-600">Subcategory</label>
+          <select v-model="selectedSubcategoryId" class="mt-1 block w-full border rounded px-2 py-1">
+            <option value="">All Subcategories</option>
+            <option v-for="sub in availableSubcategories" :key="sub.id" :value="sub.id">{{ sub.name }}</option>
+          </select>
+        </div>
+
+        <div class="flex items-end">
+          <button class="px-3 py-1 border rounded text-sm" @click.prevent="clearFilters">Clear</button>
+        </div>
+      </div>
     </div>
 
     <table class="min-w-full divide-y divide-gray-100">
@@ -18,11 +43,11 @@
           <th class="px-4 py-3 text-right text-sm font-semibold text-gray-600">Action</th>
         </tr>
       </thead>
-      <tbody class="divide-y divide-gray-100 bg-white">
+      <transition-group tag="tbody" name="list" class="divide-y divide-gray-100 bg-white">
         <tr
-          v-for="(product, index) in products"
+          v-for="(product, index) in displayedProducts"
           :key="product.id ?? index"
-          class="hover:bg-gray-50 transition"
+          class="hover:bg-gray-50 transition-transform duration-200 ease-out group"
         >
           <!-- Product name & image -->
           <td class="px-4 py-3 flex items-center gap-3">
@@ -111,17 +136,17 @@
         </tr>
 
         <!-- Empty state -->
-        <tr v-if="!products || products.length === 0">
+        <tr v-if="!displayedProducts || displayedProducts.length === 0">
           <td colspan="6" class="px-4 py-8 text-center text-gray-500 text-sm">
             No products found.
           </td>
         </tr>
-      </tbody>
+      </transition-group>
     </table>
 
     <!-- Footer / Pagination -->
     <div class="p-4 border-t flex items-center justify-between text-sm text-gray-600">
-      <span>Result 1–10 of {{ products.length || 0 }}</span>
+      <span>Showing {{ displayedProducts.length || 0 }} result(s)</span>
       <div class="flex items-center gap-1">
         <button class="px-2 py-1 border rounded text-gray-600 hover:bg-gray-50">Prev</button>
         <button class="px-2 py-1 border rounded bg-indigo-600 text-white">1</button>
@@ -137,10 +162,64 @@ const props = defineProps({
     type: Array,
     default: () => [],
   },
+  categories: {
+    type: Array,
+    default: () => [],
+  },
 });
 
+import { ref, computed } from 'vue';
+
 const products = props.products;
+const categories = props.categories;
 const placeholder = 'https://via.placeholder.com/40?text=Img';
+
+// Filter state
+const selectedCategoryId = ref('');
+const selectedSubcategoryId = ref('');
+
+const availableSubcategories = computed(() => {
+  if (!selectedCategoryId.value) return [];
+  const cat = categories.find((c) => String(c.id) === String(selectedCategoryId.value));
+  return cat?.subkategories ?? [];
+});
+
+const displayedProducts = computed(() => {
+  return (products || []).filter((p) => {
+    // no filters
+    if (!selectedCategoryId.value && !selectedSubcategoryId.value) return true;
+
+    const prodCategoryId = (
+      p.subkategori?.kategori?.id ??
+      p.subkategori_product?.kategori?.id ??
+      p.subkategori?.kategori_id ??
+      p.kategori_id ??
+      null
+    );
+
+    const prodSubId = (
+      p.subkategori_product_id ??
+      p.subkategori_product?.id ??
+      p.subkategori?.id ??
+      null
+    );
+
+    if (selectedSubcategoryId.value) {
+      return String(prodSubId) === String(selectedSubcategoryId.value);
+    }
+
+    if (selectedCategoryId.value) {
+      return String(prodCategoryId) === String(selectedCategoryId.value);
+    }
+
+    return true;
+  });
+});
+
+function clearFilters() {
+  selectedCategoryId.value = '';
+  selectedSubcategoryId.value = '';
+}
 
 function formatCurrency(value) {
   if (value === null || value === undefined) return '-';
@@ -155,3 +234,38 @@ function formatCurrency(value) {
   }
 }
 </script>
+
+<style scoped>
+/* Row enter/leave/move animations for transition-group 'list' */
+.list-enter-from,
+.list-leave-to {
+  opacity: 0;
+  transform: translateY(8px) scale(0.995);
+}
+.list-enter-to,
+.list-leave-from {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+.list-enter-active,
+.list-leave-active {
+  transition: transform 220ms cubic-bezier(.2,.8,.2,1), opacity 220ms ease;
+}
+.list-move {
+  transition: transform 220ms cubic-bezier(.2,.8,.2,1);
+}
+
+/* Hover micro-interactions */
+.group:hover td img {
+  transform: scale(1.05);
+}
+td img {
+  transition: transform 180ms ease;
+}
+
+/* Subtle button focus/active states */
+button:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(99,102,241,0.12);
+}
+</style>

@@ -167,7 +167,16 @@ function close() {
 function submit() {
   // attach subkategori_product_id is already bound
   if (props.mode === 'edit' && props.product) {
-    form.put(`/admin/products/${props.product.id}`, {
+    // Use POST with method override when uploading files for updates.
+    // Some browsers/servers don't support multipart PUT; sending as POST
+    // with `_method=PUT` ensures the file is sent as multipart/form-data
+    // and Laravel will treat it as a PUT/PATCH request.
+    // include the method override so Laravel treats this as PUT.
+    // Some servers/contents don't populate POST parameters (e.g. JSON body),
+    // so also add the X-HTTP-Method-Override header which Symfony/Laravel will read.
+    form.post(`/admin/products/${props.product.id}`, {
+      data: { _method: 'PUT' },
+      headers: { 'X-HTTP-Method-Override': 'PUT' },
       onSuccess: () => {
         close();
       },
