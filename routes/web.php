@@ -59,6 +59,26 @@ Route::get('/shop', function () {
     return Inertia::render('ShopPage');
 })->middleware(['auth', 'verified'])->name('shop');
 
+// About Us
+Route::get('/about', function () {
+    return Inertia::render('About');
+});
+
+// Help Center
+Route::get('/help-center', function () {
+    return Inertia::render('HelpCenter');
+})->name('help-center');
+
+// Garansi
+Route::get('/garansi', function () {
+    return Inertia::render('Garansi');
+})->name('garansi');
+
+// Contact Us
+Route::get('/contact', function () {
+    return Inertia::render('ContactUs');
+})->name('contact');
+
 Route::get('/test', function () {
     return 'TEST JALAN!';
 });
