@@ -1,7 +1,13 @@
 <template>
     <div class="min-h-screen bg-[#F5F7FA]">
 
-        <Head title="Detail Produk - Ella Elektrik" />
+        <Head>
+            <title>{{ pageTitle }}</title>
+            <meta name="description" :content="metaDescription" />
+            <meta property="og:title" :content="pageTitle" />
+            <meta property="og:description" :content="metaDescription" />
+            <meta property="og:image" :content="mainImage" />
+        </Head>
 
         <!-- Header -->
         <HeaderLayout />
@@ -11,13 +17,15 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
                 <!-- Kolom Kiri: Gambar Produk -->
                 <div class="flex flex-col items-center justify-center">
-                    <img :src="product.image" :alt="product.name"
+                    <img :src="mainImage" :alt="product.name"
                         class="w-full max-w-md rounded-xl shadow-md object-contain mb-6" />
 
                     <!-- Gambar Lain / Thumbnail -->
-                    <div class="flex space-x-4 mt-4">
+                    <div v-if="product.gallery && product.gallery.length > 1" class="flex space-x-4 mt-4">
                         <img v-for="(img, i) in product.gallery" :key="i" :src="img" alt="Thumbnail"
-                            class="w-28 h-28 rounded-lg object-cover cursor-pointer border border-gray-200 hover:border-gray-400 transition" />
+                            @click="selectImage(i)"
+                            :class="['w-28 h-28 rounded-lg object-cover cursor-pointer border transition',
+                                     selectedIndex === i ? 'border-black' : 'border-gray-200 hover:border-gray-400']" />
                     </div>
                 </div>
 
@@ -26,7 +34,7 @@
                     <div>
                         <h1 class="text-3xl font-bold mb-2">{{ product.name }}</h1>
                         <p class="text-2xl font-semibold text-gray-800 mb-4">
-                            Rp. {{ product.price.toLocaleString('id-ID') }}
+                            Rp. {{ formatPrice(product.price) }}
                         </p>
 
                         <p class="text-gray-600 mb-6 leading-relaxed">
@@ -34,13 +42,10 @@
                         </p>
 
                         <!-- Spesifikasi Produk -->
-                        <div class="mb-6">
+                        <div v-if="product.specs && product.specs.length" class="mb-6">
                             <h3 class="font-semibold mb-3 text-lg">Spesifikasi Produk</h3>
                             <ul class="list-disc list-inside text-gray-700 leading-relaxed space-y-1">
-                                <li>3 Kecepatan Angin</li>
-                                <li>Diameter 16 cm</li>
-                                <li>Motor Halus dan Hemat Listrik</li>
-                                <li>Garansi 1 Tahun</li>
+                                <li v-for="(spec, i) in product.specs" :key="i">{{ spec }}</li>
                             </ul>
                         </div>
 
@@ -86,34 +91,47 @@
 import { Head, Link } from '@inertiajs/vue3'
 import HeaderLayout from '@/components/HeaderLayout.vue'
 import FooterLayout from '@/components/FooterLayout.vue'
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 
-// ✅ Data Dummy
-const product = ref({
-    name: 'Kipas Karakter',
-    price: 100000,
-    description:
-        'Kipas angin karakter lucu dengan desain menarik dan kualitas terbaik. Dilengkapi 3 kecepatan angin, diameter 16 cm, serta motor halus dan hemat listrik.',
-    image: '/images/kipas.png',
-    gallery: [
-        '/images/kipas1.png',
-        '/images/kipas2.png',
-        '/images/kipas3.png',
-    ],
-    specs: [
-        '3 Kecepatan Angin',
-        'Diameter 16 cm',
-        'Motor Halus dan Hemat Listrik',
-        'Garansi 1 Tahun',
-    ],
+// Receive product from Inertia
+const props = defineProps({
+    product: {
+        type: Object,
+        required: true,
+        default: () => ({})
+    }
 })
 
-// 🔢 Jumlah Produk
+// Quantity state
 const quantity = ref(1)
 const increaseQty = () => quantity.value++
-const decreaseQty = () => {
-    if (quantity.value > 1) quantity.value--
+const decreaseQty = () => { if (quantity.value > 1) quantity.value-- }
+
+// Image gallery state
+const selectedIndex = ref(0)
+const selectImage = (i) => { selectedIndex.value = i }
+const mainImage = computed(() => {
+    const g = props.product?.gallery || []
+    if (g.length > 0) return g[selectedIndex.value] || g[0]
+    return props.product?.image || '/images/placeholder.png'
+})
+
+// SEO
+const pageTitle = computed(() => `Detail Produk - ${props.product?.name || 'Produk'} | Ella Elektrik`)
+const metaDescription = computed(() => (props.product?.description || '').toString().slice(0, 160))
+
+// Price formatting
+const formatPrice = (value) => {
+    if (value == null) return '-'
+    try {
+        return new Intl.NumberFormat('id-ID').format(Number(value))
+    } catch (e) {
+        return value
+    }
 }
+
+// Alias for template access
+const product = props.product
 </script>
 
 <style scoped>

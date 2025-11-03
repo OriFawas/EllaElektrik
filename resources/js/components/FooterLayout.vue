@@ -1,3 +1,7 @@
+<script setup>
+import { Link } from '@inertiajs/vue3'
+</script>
+
 <template>
   <footer class="bg-[#f3f1ed] text-[#222] py-12 px-6 md:px-16">
     <div class="grid grid-cols-1 md:grid-cols-2 gap-15">
@@ -33,17 +37,25 @@
           <div>
             <h2 class="text-xl font-semibold mb-2 text-gray-700">Help</h2>
             <ul class="space-y-1 text-gray-600">
-              <li>Help Center</li>
-              <li>Garansi</li>
-              <li>Contact Us</li>
+              <li>
+                <Link href="/help-center" class="hover:text-black transition">Help Center</Link>
+              </li>
+              <li>
+                <Link href="/garansi" class="hover:text-black transition">Garansi</Link>
+              </li>
+              <li>
+                <Link href="/contact" class="hover:text-black transition">Contact Us</Link>
+              </li>
             </ul>
           </div>
 
           <div>
             <h2 class="text-xl font-semibold mb-2 text-gray-700">About Us</h2>
-            <ul class="space-y-1 text-gray-600">
-              <li>Visi Misi</li>
-            </ul>
+              <ul class="space-y-1 text-gray-600">
+                <li>
+                  <Link href="/about" class="hover:text-black transition">Visi Misi</Link>
+                </li>
+              </ul>
           </div>
         </div>
 

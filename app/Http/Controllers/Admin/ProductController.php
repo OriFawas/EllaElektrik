@@ -25,6 +25,9 @@ class ProductController extends Controller
             'watt' => 'nullable|integer',
             'brand' => 'nullable|string|max:255',
             'image' => 'nullable|file|mimes:jpg,jpeg,png,gif|max:5120',
+            'specs' => 'nullable|array',
+            'specs.*.key' => 'nullable|string|max:255',
+            'specs.*.value' => 'nullable|string|max:255',
         ]);
 
         // slug generation and uniqueness
@@ -58,6 +61,7 @@ class ProductController extends Controller
             'watt' => $data['watt'] ?? null,
             'brand' => $data['brand'] ?? null,
             'subkategori_product_id' => $data['subkategori_product_id'] ?? null,
+            'specs' => $data['specs'] ?? null,
         ]);
 
         return redirect()->route('admin.products')->with('success', 'Product created');
@@ -78,6 +82,9 @@ class ProductController extends Controller
             'watt' => 'nullable|integer',
             'brand' => 'nullable|string|max:255',
             'image' => 'nullable|file|mimes:jpg,jpeg,png,gif|max:5120',
+            'specs' => 'nullable|array',
+            'specs.*.key' => 'nullable|string|max:255',
+            'specs.*.value' => 'nullable|string|max:255',
         ]);
 
         if ($product->name !== $data['name']) {
@@ -109,6 +116,7 @@ class ProductController extends Controller
         $product->watt = $data['watt'] ?? null;
         $product->brand = $data['brand'] ?? null;
         $product->subkategori_product_id = $data['subkategori_product_id'] ?? null;
+    $product->specs = $data['specs'] ?? null;
         $product->save();
 
         return redirect()->route('admin.products')->with('success', 'Product updated');

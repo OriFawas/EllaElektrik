@@ -2,6 +2,7 @@
 import HeaderLayout from '../components/HeaderLayout.vue'
 import FooterLayout from '@/components/FooterLayout.vue'
 import { ref, computed, watch, onMounted } from 'vue'
+import { Link } from '@inertiajs/vue3'
 
 // kategori aktif (default)
 const selectedCategory = ref('Elektronik Rumah Tangga')
@@ -192,15 +193,17 @@ onMounted(async () => {
             :key="product.id || index"
             class="bg-white shadow-md rounded-lg overflow-hidden hover:shadow-lg transition"
           >
-            <img
-              :src="product.image_url || '/images/placeholder.png'"
-              :alt="product.name || 'Product'"
-              class="w-full h-40 object-cover"
-            />
-            <div class="p-4">
-              <h4 class="font-medium">{{ product.name }}</h4>
-              <p class="text-gray-600">{{ formatPrice(product.price) }}</p>
-            </div>
+            <Link :href="`/products/${product.slug}`" class="block">
+              <img
+                :src="product.image_url || '/images/placeholder.png'"
+                :alt="product.name || 'Product'"
+                class="w-full h-40 object-cover"
+              />
+              <div class="p-4">
+                <h4 class="font-medium">{{ product.name }}</h4>
+                <p class="text-gray-600">{{ formatPrice(product.price) }}</p>
+              </div>
+            </Link>
           </div>
         </div>
 
