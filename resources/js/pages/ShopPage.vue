@@ -202,6 +202,14 @@ onMounted(async () => {
               <div class="p-4">
                 <h4 class="font-medium">{{ product.name }}</h4>
                 <p class="text-gray-600">{{ formatPrice(product.price) }}</p>
+                <p class="mt-1">
+                  <span :class="[
+                    'px-2 py-0.5 rounded-full text-xs',
+                    product.stock <= 0 ? 'bg-red-100 text-red-700' : (product.stock <= 10 ? 'bg-yellow-100 text-yellow-700' : 'bg-green-100 text-green-700')
+                  ]">
+                    Stok: {{ product.stock ?? 0 }}
+                  </span>
+                </p>
               </div>
             </Link>
           </div>

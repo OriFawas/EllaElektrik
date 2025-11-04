@@ -33,8 +33,16 @@
                 <div class="flex flex-col justify-between">
                     <div>
                         <h1 class="text-3xl font-bold mb-2">{{ product.name }}</h1>
-                        <p class="text-2xl font-semibold text-gray-800 mb-4">
+                        <p class="text-2xl font-semibold text-gray-800 mb-1">
                             Rp. {{ formatPrice(product.price) }}
+                        </p>
+                        <p class="text-sm mb-4">
+                            <span :class="[
+                                'px-2 py-0.5 rounded-full',
+                                product.stock <= 0 ? 'bg-red-100 text-red-700' : (product.stock <= 10 ? 'bg-yellow-100 text-yellow-700' : 'bg-green-100 text-green-700')
+                            ]">
+                                Stok: {{ product.stock ?? 0 }}
+                            </span>
                         </p>
 
                         <p class="text-gray-600 mb-6 leading-relaxed">
@@ -55,8 +63,11 @@
                             <div class="flex flex-wrap items-center gap-4">
                                 <!-- Tombol Masukkan Keranjang -->
                                 <button
-                                    class="flex items-center justify-center gap-2 bg-black text-white px-6 py-3 rounded-md hover:bg-gray-800 transition">
-                                    <i class="fas fa-cart-plus"></i> Masukkan Keranjang
+                                    :disabled="(product.stock ?? 0) <= 0"
+                                    :class="['flex items-center justify-center gap-2 px-6 py-3 rounded-md transition',
+                                             (product.stock ?? 0) <= 0 ? 'bg-gray-300 text-gray-600 cursor-not-allowed' : 'bg-black text-white hover:bg-gray-800']">
+                                    <i class="fas fa-cart-plus"></i>
+                                    {{ (product.stock ?? 0) <= 0 ? 'Stok Habis' : 'Masukkan Keranjang' }}
                                 </button>
 
                                 <!-- Jumlah -->
@@ -104,7 +115,10 @@ const props = defineProps({
 
 // Quantity state
 const quantity = ref(1)
-const increaseQty = () => quantity.value++
+const increaseQty = () => {
+    const max = Number.isFinite(props.product?.stock) ? Number(props.product.stock) : Infinity
+    if (quantity.value < max) quantity.value++
+}
 const decreaseQty = () => { if (quantity.value > 1) quantity.value-- }
 
 // Image gallery state
