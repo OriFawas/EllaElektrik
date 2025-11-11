@@ -30,9 +30,12 @@
         </Link>
 
         <!-- Keranjang -->
-        <div class="flex items-center space-x-2 hover:text-gray-300 cursor-pointer transition">
+        <Link
+          href="/cart"
+          class="flex items-center space-x-2 hover:text-gray-300 cursor-pointer transition"
+        >
           <img src="/images/cart-icon.png" alt="Keranjang" class="h-5 w-5">
-        </div>
+        </Link>
 
         <!-- Jika belum login -->
         <template v-if="!$page.props.auth?.user">

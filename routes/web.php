@@ -121,6 +121,15 @@ Route::get('/contact', function () {
     return Inertia::render('ContactUs');
 })->name('contact');
 
+    // Halaman Keranjang
+    Route::get('/cart', function () {
+        return Inertia::render('CartPage');
+    })->name('cart');
+
+    // Halaman Checkout
+    Route::get('/checkout', function () {
+        return Inertia::render('CheckoutPage');
+    })->name('checkout');
 
 require __DIR__.'/settings.php';
 require __DIR__.'/auth.php';
