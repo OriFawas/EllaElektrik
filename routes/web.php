@@ -35,6 +35,12 @@ Route::get('/admin/products', function () {
     ]);
 })->middleware(['auth', 'verified', 'admin'])->name('admin.products');
 
+// Dashboard Admin - Pesanan
+Route::get('/admin/orders', function () {
+    return Inertia::render('DashboardAdmin_Pesanan');
+})->name('admin.orders');
+
+
 // User Data Diri
 Route::middleware(['auth'])->group(function () {
     Route::get('/user/data-diri', [UserController::class, 'showDataDiri']);
