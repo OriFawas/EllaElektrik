@@ -2,6 +2,74 @@
 import { Link } from '@inertiajs/vue3'
 import HeaderLayout from '@/components/HeaderLayout.vue'
 import FooterLayout from '@/components/FooterLayout.vue'
+import { ref, onMounted } from 'vue'
+
+const loading = ref(false)
+const error = ref(null)
+const cart = ref({ items: [], subtotal: 0, item_count: 0 })
+
+const fetchCart = async () => {
+  loading.value = true
+  error.value = null
+  try {
+  const res = await fetch('/api/cart', {
+    credentials: 'same-origin',
+    headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
+  })
+    if (res.status === 401) { window.location.href = '/login'; return }
+    if (!res.ok) throw new Error(`Gagal memuat keranjang (${res.status})`)
+    const data = await res.json()
+    cart.value = {
+      items: Array.isArray(data.items) ? data.items : [],
+      subtotal: Number(data.subtotal || 0),
+      item_count: Number(data.item_count || 0),
+    }
+  } catch (e) {
+    error.value = e.message || String(e)
+  } finally {
+    loading.value = false
+  }
+}
+
+const updateQty = async (itemId, qty) => {
+  try {
+    const res = await fetch(`/api/cart/items/${itemId}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest',
+        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+      },
+      credentials: 'same-origin',
+      body: JSON.stringify({ qty })
+    })
+    if (res.status === 401) { window.location.href = '/login'; return }
+    if (!res.ok) throw new Error('Gagal memperbarui jumlah')
+    const data = await res.json()
+    cart.value = { items: data.items, subtotal: data.subtotal, item_count: data.item_count }
+  } catch (e) { console.error(e) }
+}
+
+const removeItem = async (itemId) => {
+  try {
+    const res = await fetch(`/api/cart/items/${itemId}`, {
+      method: 'DELETE',
+      headers: {
+        'Accept': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest',
+        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+      },
+      credentials: 'same-origin',
+    })
+    if (res.status === 401) { window.location.href = '/login'; return }
+    if (!res.ok) throw new Error('Gagal menghapus item')
+    const data = await res.json()
+    cart.value = { items: data.items, subtotal: data.subtotal, item_count: data.item_count }
+  } catch (e) { console.error(e) }
+}
+
+onMounted(fetchCart)
 </script>
 
 <template>
@@ -14,12 +82,19 @@ import FooterLayout from '@/components/FooterLayout.vue'
     <main class="flex-1">
       <h1 class="text-2xl font-semibold px-8 pt-8">Keranjangmu</h1>
 
-      <div class="px-8 grid grid-cols-1 lg:grid-cols-2 gap-10 py-10">
+      <!-- Loading / Error / Empty states -->
+      <div v-if="loading" class="px-8 py-16 text-center text-gray-500">Memuat keranjang…</div>
+      <div v-else-if="error" class="px-8 py-16 text-center text-red-500">{{ error }}</div>
+      <div v-else-if="cart.items.length === 0" class="px-8 py-16 text-center text-gray-500">
+        Keranjangmu kosong.
+      </div>
+
+      <div v-else class="px-8 grid grid-cols-1 lg:grid-cols-2 gap-10 py-10">
 
         <!-- Daftar Item -->
         <div class="space-y-6">
           <div
-            v-for="item in cartItems"
+            v-for="item in cart.items"
             :key="item.id"
             class="flex gap-4 border-b pb-4"
           >
@@ -27,8 +102,12 @@ import FooterLayout from '@/components/FooterLayout.vue'
 
             <div class="flex-1">
               <p class="font-semibold text-lg">{{ item.name }}</p>
-              <p class="text-sm">Jumlah : {{ item.qty }}</p>
-              <p class="font-semibold">Rp. {{ item.price.toLocaleString() }}</p>
+              <div class="flex items-center gap-3 text-sm">
+                <button @click="updateQty(item.id, Math.max(1, item.qty - 1))" class="px-2 py-1 border rounded">-</button>
+                <span>Jumlah : {{ item.qty }}</span>
+                <button @click="updateQty(item.id, Math.min(99, item.qty + 1))" class="px-2 py-1 border rounded">+</button>
+              </div>
+              <p class="font-semibold">Rp. {{ Number(item.unit_price || item.unit_price_snapshot || 0).toLocaleString() }}</p>
             </div>
 
             <button @click="removeItem(item.id)" class="text-red-500 text-sm hover:underline">
@@ -43,16 +122,16 @@ import FooterLayout from '@/components/FooterLayout.vue'
 
           <div class="text-sm space-y-2 mb-6">
 
-            <div v-for="item in cartItems" :key="item.id" class="flex justify-between">
+            <div v-for="item in cart.items" :key="item.id" class="flex justify-between">
               <span>{{ item.name }}</span>
-              <span>Rp. {{ item.price.toLocaleString() }}</span>
+              <span>Rp. {{ Number(item.unit_price || item.unit_price_snapshot || 0).toLocaleString() }} × {{ item.qty }}</span>
             </div>
 
             <hr class="my-2" />
 
             <div class="flex justify-between">
               <span>Subtotal</span>
-              <span>Rp. {{ subtotal.toLocaleString() }}</span>
+              <span>Rp. {{ Number(cart.subtotal).toLocaleString() }}</span>
             </div>
 
             <div class="flex justify-between">
@@ -64,7 +143,7 @@ import FooterLayout from '@/components/FooterLayout.vue'
 
             <div class="flex justify-between font-semibold text-lg">
               <span>Total</span>
-              <span>Rp. {{ (subtotal + 2000).toLocaleString() }}</span>
+              <span>Rp. {{ (Number(cart.subtotal) + 2000).toLocaleString() }}</span>
             </div>
           </div>
 
@@ -91,11 +170,7 @@ export default {
   name: "CartPage",
   data() {
     return {
-      cartItems: [
-        { id: 1, name: "Kipas Karakter", qty: 1, price: 100000, image: "/img/kipas.png" },
-        { id: 2, name: "Blender", qty: 1, price: 150000, image: "/img/blender.png" },
-        { id: 3, name: "Lampu Tidur", qty: 1, price: 8000, image: "/img/lampu.png" },
-      ],
+      cartItems: [],
     }
   },
   computed: {

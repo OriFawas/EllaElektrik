@@ -6,6 +6,8 @@ use Inertia\Inertia;
 use App\Models\Product;
 use App\Http\Controllers\ShopController;
 use App\Http\Controllers\ProductController as PublicProductController;
+use App\Http\Controllers\Api\CartController;
+use Illuminate\Http\Request;
 
 Route::get('/', function () {
     return Inertia::render('Welcome');
@@ -100,6 +102,13 @@ Route::get('/detailproduk', function () {
 Route::get('/products/{product:slug}', [PublicProductController::class, 'show'])
     ->name('products.show');
 
+// Search page
+Route::get('/search', function (Request $request) {
+    return Inertia::render('SearchResults', [
+        'initialQuery' => (string) $request->query('q', ''),
+    ]);
+})->name('search');
+
 
 // About Us
 Route::get('/about', function () {
@@ -133,3 +142,11 @@ Route::get('/contact', function () {
 
 require __DIR__.'/settings.php';
 require __DIR__.'/auth.php';
+
+// Cart API over web session (auth required)
+Route::middleware(['auth'])->group(function () {
+    Route::get('/api/cart', [CartController::class, 'show']);
+    Route::post('/api/cart/items', [CartController::class, 'store']);
+    Route::put('/api/cart/items/{itemId}', [CartController::class, 'update']);
+    Route::delete('/api/cart/items/{itemId}', [CartController::class, 'destroy']);
+});

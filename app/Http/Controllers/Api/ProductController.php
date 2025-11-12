@@ -15,6 +15,7 @@ class ProductController extends Controller
     public function index(Request $request)
     {
         $subcats = $request->query('subcategories');
+        $q = trim((string) $request->query('q', ''));
 
         $query = Product::query()->with('subkategori')->where('is_active', true);
 
@@ -23,6 +24,14 @@ class ProductController extends Controller
             if (!empty($ids)) {
                 $query->whereIn('subkategori_product_id', $ids);
             }
+        }
+
+        // Apply free-text search if provided (name/brand)
+        if ($q !== '') {
+            $query->where(function ($inner) use ($q) {
+                $inner->where('name', 'like', "%{$q}%")
+                      ->orWhere('brand', 'like', "%{$q}%");
+            });
         }
 
         $products = $query->orderBy('name')->get([

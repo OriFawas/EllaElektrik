@@ -1,49 +1,61 @@
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { Link } from '@inertiajs/vue3'
 import HeaderLayout from '@/components/HeaderLayout.vue'
 import FooterLayout from '@/components/FooterLayout.vue'
 
 const codChecked = ref(false)
 
-const cartItems = ref([
-  {
-    id: 1,
-    name: "Kipas Karakter",
-    spec: "...",
-    qty: 1,
-    price: 100000,
-    image: "/img/kipas.png"
-  },
-  {
-    id: 2,
-    name: "Blender",
-    spec: "...",
-    qty: 1,
-    price: 150000,
-    image: "/img/blender.png"
-  },
-  {
-    id: 3,
-    name: "Lampu Tidur",
-    spec: "...",
-    qty: 1,
-    price: 8000,
-    image: "/img/lampu.png"
-  }
-])
+// Cart state loaded from backend
+const loading = ref(false)
+const error = ref(null)
+const cart = ref({ items: [], subtotal: 0, item_count: 0 })
 
 const serviceFee = ref(2000)
 
-const subtotal = computed(() =>
-  cartItems.value.reduce((sum, item) => sum + item.price, 0)
-)
+const fetchCart = async () => {
+  loading.value = true
+  error.value = null
+  try {
+  const res = await fetch('/api/cart', { credentials: 'same-origin', headers: { 'Accept': 'application/json' } })
+    if (res.status === 401) { window.location.href = '/login'; return }
+    if (!res.ok) throw new Error(`Gagal memuat keranjang (${res.status})`)
+    const data = await res.json()
+    cart.value = {
+      items: Array.isArray(data.items) ? data.items : [],
+      subtotal: Number(data.subtotal || 0),
+      item_count: Number(data.item_count || 0),
+    }
+  } catch (e) {
+    error.value = e.message || String(e)
+  } finally {
+    loading.value = false
+  }
+}
 
+const subtotal = computed(() => Number(cart.value.subtotal || 0))
 const total = computed(() => subtotal.value + serviceFee.value)
 
-const removeItem = (id) => {
-  cartItems.value = cartItems.value.filter(i => i.id !== id)
+const removeItem = async (id) => {
+  try {
+    const res = await fetch(`/api/cart/items/${id}`, {
+      method: 'DELETE',
+      headers: {
+        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+      },
+      credentials: 'same-origin',
+    })
+    if (res.status === 401) { window.location.href = '/login'; return }
+    if (!res.ok) throw new Error('Gagal menghapus item')
+    const data = await res.json()
+    cart.value = { items: data.items, subtotal: data.subtotal, item_count: data.item_count }
+  } catch (e) {
+    console.error(e)
+    error.value = e.message || String(e)
+  }
 }
+
+onMounted(fetchCart)
 </script>
 
 <template>
@@ -56,8 +68,12 @@ const removeItem = (id) => {
 
       <!-- Bagian Keranjang -->
       <div class="space-y-6">
+        <div v-if="loading" class="text-gray-500">Memuat keranjang…</div>
+        <div v-else-if="error" class="text-red-500">{{ error }}</div>
+        <div v-else-if="cart.items.length === 0" class="text-gray-500">Keranjangmu kosong.</div>
+
         <div
-          v-for="item in cartItems"
+          v-for="item in cart.items"
           :key="item.id"
           class="flex gap-4 border-b pb-4"
         >
@@ -65,9 +81,8 @@ const removeItem = (id) => {
 
           <div class="flex-1">
             <p class="font-semibold text-lg">{{ item.name }}</p>
-            <p class="text-sm text-gray-500">Spesifikasi : {{ item.spec }}</p>
             <p class="text-sm">Jumlah : {{ item.qty }}</p>
-            <p class="font-semibold mt-1">Rp. {{ item.price.toLocaleString() }}</p>
+            <p class="font-semibold mt-1">Rp. {{ Number(item.unit_price || item.unit_price_snapshot || 0).toLocaleString() }}</p>
           </div>
 
           <button @click="removeItem(item.id)" class="text-sm text-red-500 hover:underline">

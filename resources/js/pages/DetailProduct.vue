@@ -63,6 +63,7 @@
                             <div class="flex flex-wrap items-center gap-4">
                                 <!-- Tombol Masukkan Keranjang -->
                                 <button
+                                    @click="addToCart"
                                     :disabled="(product.stock ?? 0) <= 0"
                                     :class="['flex items-center justify-center gap-2 px-6 py-3 rounded-md transition',
                                              (product.stock ?? 0) <= 0 ? 'bg-gray-300 text-gray-600 cursor-not-allowed' : 'bg-black text-white hover:bg-gray-800']">
@@ -93,13 +94,20 @@
             </div>
         </main>
 
+        <!-- Toast Notification -->
+        <div v-if="toast.show" class="fixed top-24 left-1/2 -translate-x-1/2 z-[60]">
+            <div :class="['px-5 py-3 rounded-md shadow-md text-white', toast.type === 'error' ? 'bg-red-600' : 'bg-emerald-600']" role="status" aria-live="polite">
+                {{ toast.message }}
+            </div>
+        </div>
+
         <!-- Footer -->
         <FooterLayout />
     </div>
 </template>
 
 <script setup>
-import { Head, Link } from '@inertiajs/vue3'
+import { Head, Link, router } from '@inertiajs/vue3'
 import HeaderLayout from '@/components/HeaderLayout.vue'
 import FooterLayout from '@/components/FooterLayout.vue'
 import { ref, computed } from 'vue'
@@ -146,6 +154,48 @@ const formatPrice = (value) => {
 
 // Alias for template access
 const product = props.product
+
+// Add to cart API integration
+const adding = ref(false)
+const toast = ref({ show: false, message: '', type: 'success' })
+let toastTimer = null
+
+const showToast = (message, type = 'success') => {
+    clearTimeout(toastTimer)
+    toast.value = { show: true, message, type }
+    toastTimer = setTimeout(() => { toast.value.show = false }, 2500)
+}
+
+const addToCart = async () => {
+    if ((product?.stock ?? 0) <= 0 || adding.value) return
+    adding.value = true
+    try {
+        const res = await fetch('/api/cart/items', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                'X-Requested-With': 'XMLHttpRequest',
+            },
+            credentials: 'same-origin',
+            body: JSON.stringify({ product_id: product.id, qty: quantity.value })
+        })
+
+        if (res.status === 401) { router.visit('/login'); return }
+        if (!res.ok) {
+            const text = await res.text()
+            throw new Error(text || `Gagal menambahkan (${res.status})`)
+        }
+
+        showToast('Barang telah dimasukkan ke keranjang', 'success')
+    } catch (e) {
+        console.error(e)
+        showToast('Gagal menambahkan ke keranjang', 'error')
+    } finally {
+        adding.value = false
+    }
+}
 </script>
 
 <style scoped>
