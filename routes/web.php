@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use App\Models\Product;
+use App\Models\User;
 
 Route::get('/', function () {
     return Inertia::render('Welcome');
@@ -52,8 +53,17 @@ Route::get('/shop', function () {
 })->middleware(['auth', 'verified'])->name('shop');
 
 //Compare Page
-Route::get('/compare', fn() => inertia('ComparePage'));
+Route::get('/Compare', fn() => inertia('ComparePage'));
 
+// Status Order Page
+Route::get('/StatusOrder', function () {
+    return Inertia::render('StatusOrder');
+})->middleware(['auth', 'verified'])->name('status.order');
+
+// Halaman User Admin
+Route::get('/UserPage', function () {
+    return Inertia::render('UserPage');
+})->middleware(['auth', 'verified'])->name('UserPage');
 
 require __DIR__.'/settings.php';
 require __DIR__.'/auth.php';

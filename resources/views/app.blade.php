@@ -44,5 +44,12 @@
     </head>
     <body class="font-sans antialiased">
         @inertia
+
+        <script src="https://unpkg.com/lucide@latest"></script>
+        <script>
+            document.addEventListener("DOMContentLoaded", () => {
+            if (window.lucide) window.lucide.createIcons();
+        });
+        </script>
     </body>
 </html>
