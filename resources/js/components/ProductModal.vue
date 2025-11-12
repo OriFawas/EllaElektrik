@@ -2,13 +2,23 @@
   <div class="fixed inset-0 z-50 flex items-center justify-center">
     <div class="fixed inset-0 bg-black/40" @click="close"></div>
 
+<<<<<<< HEAD
     <div class="bg-white rounded-lg shadow-lg w-full max-w-2xl z-10 overflow-hidden">
+=======
+    <div class="bg-white rounded-lg shadow-lg w-full max-w-2xl z-10 overflow-hidden max-h-[85vh] flex flex-col">
+>>>>>>> deeab084d5997b89c4ed55a325bea112aeb0f33b
           <div class="p-4 flex items-center justify-between border-b">
             <h3 class="text-lg font-semibold">{{ props.mode === 'edit' ? 'Edit Product' : 'Add Product' }}</h3>
             <button class="text-gray-500" @click="close">✕</button>
           </div>
 
+<<<<<<< HEAD
       <form @submit.prevent="submit" class="p-4 space-y-4" enctype="multipart/form-data">
+=======
+      <form @submit.prevent="submit" class="flex-1 flex flex-col min-h-0" enctype="multipart/form-data">
+        <!-- Scrollable content -->
+        <div class="flex-1 overflow-y-auto p-4 space-y-4">
+>>>>>>> deeab084d5997b89c4ed55a325bea112aeb0f33b
         <div class="grid grid-cols-2 gap-4">
           <div>
             <label class="block text-sm font-medium text-gray-700">Name</label>
@@ -79,7 +89,32 @@
           </div>
         </div>
 
+<<<<<<< HEAD
         <div class="flex justify-end gap-2 items-center">
+=======
+        <!-- Additional Specs -->
+        <div>
+          <div class="flex items-center justify-between mb-2">
+            <label class="block text-sm font-medium text-gray-700">Additional Specifications</label>
+            <button type="button" class="text-sm text-indigo-600 hover:underline" @click="addSpec">+ Add Spec</button>
+          </div>
+          <div v-if="form.specs && form.specs.length > 0" class="space-y-2">
+            <div v-for="(row, idx) in form.specs" :key="idx" class="grid grid-cols-5 gap-2">
+              <input v-model="row.key" type="text" placeholder="Key (e.g., Voltage)" class="col-span-2 border rounded px-2 py-1" />
+              <input v-model="row.value" type="text" placeholder="Value (e.g., 220V)" class="col-span-3 border rounded px-2 py-1" />
+              <div class="col-span-5 flex justify-end">
+                <button type="button" class="text-sm text-red-600 hover:underline" @click="removeSpec(idx)">Remove</button>
+              </div>
+            </div>
+          </div>
+          <p v-if="form.errors['specs']" class="text-red-600 text-sm">{{ form.errors['specs'] }}</p>
+        </div>
+
+        </div>
+
+        <!-- Sticky footer inside modal -->
+        <div class="p-4 border-t flex justify-end gap-2 items-center bg-white">
+>>>>>>> deeab084d5997b89c4ed55a325bea112aeb0f33b
           <button type="button" class="px-4 py-2 border rounded" @click="close">Cancel</button>
           <button v-if="props.mode === 'edit'" type="button" class="px-4 py-2 bg-red-600 text-white rounded" @click="removeProduct">Remove</button>
           <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded">{{ props.mode === 'edit' ? 'Update' : 'Save' }}</button>
@@ -111,6 +146,10 @@ const form = useForm({
   watt: props.product?.watt ?? null,
   brand: props.product?.brand ?? '',
   image: null,
+<<<<<<< HEAD
+=======
+  specs: Array.isArray(props.product?.specs) ? props.product.specs.map(r => ({ key: r.key ?? '', value: r.value ?? '' })) : [],
+>>>>>>> deeab084d5997b89c4ed55a325bea112aeb0f33b
 });
 
 const selectedCategoryId = ref(props.product?.subkategori?.kategori?.id ?? '');
@@ -140,6 +179,10 @@ watch(() => props.product, (p) => {
     watt: p.watt ?? null,
     brand: p.brand ?? '',
     image: null,
+<<<<<<< HEAD
+=======
+    specs: Array.isArray(p.specs) ? p.specs.map(r => ({ key: r.key ?? '', value: r.value ?? '' })) : [],
+>>>>>>> deeab084d5997b89c4ed55a325bea112aeb0f33b
   });
   selectedCategoryId.value = p.subkategori?.kategori?.id ?? '';
   const cat = props.categories.find((c) => String(c.id) === String(selectedCategoryId.value));
@@ -181,6 +224,19 @@ function submit() {
   }
 }
 
+<<<<<<< HEAD
+=======
+function addSpec() {
+  if (!Array.isArray(form.specs)) form.specs = []
+  form.specs.push({ key: '', value: '' })
+}
+
+function removeSpec(idx) {
+  if (!Array.isArray(form.specs)) return
+  form.specs.splice(idx, 1)
+}
+
+>>>>>>> deeab084d5997b89c4ed55a325bea112aeb0f33b
 function removeProduct() {
   if (!props.product) return;
   if (!confirm('Are you sure you want to remove this product?')) return;

@@ -1,3 +1,10 @@
+<<<<<<< HEAD
+=======
+<script setup>
+import { Link } from '@inertiajs/vue3'
+</script>
+
+>>>>>>> deeab084d5997b89c4ed55a325bea112aeb0f33b
 <template>
   <footer class="bg-[#f3f1ed] text-[#222] py-12 px-6 md:px-16">
     <div class="grid grid-cols-1 md:grid-cols-2 gap-15">
@@ -33,17 +40,37 @@
           <div>
             <h2 class="text-xl font-semibold mb-2 text-gray-700">Help</h2>
             <ul class="space-y-1 text-gray-600">
+<<<<<<< HEAD
               <li>Help Center</li>
               <li>Garansi</li>
               <li>Contact Us</li>
+=======
+              <li>
+                <Link href="/help-center" class="hover:text-black transition">Help Center</Link>
+              </li>
+              <li>
+                <Link href="/garansi" class="hover:text-black transition">Garansi</Link>
+              </li>
+              <li>
+                <Link href="/contact" class="hover:text-black transition">Contact Us</Link>
+              </li>
+>>>>>>> deeab084d5997b89c4ed55a325bea112aeb0f33b
             </ul>
           </div>
 
           <div>
             <h2 class="text-xl font-semibold mb-2 text-gray-700">About Us</h2>
+<<<<<<< HEAD
             <ul class="space-y-1 text-gray-600">
               <li>Visi Misi</li>
             </ul>
+=======
+              <ul class="space-y-1 text-gray-600">
+                <li>
+                  <Link href="/about" class="hover:text-black transition">Visi Misi</Link>
+                </li>
+              </ul>
+>>>>>>> deeab084d5997b89c4ed55a325bea112aeb0f33b
           </div>
         </div>
 
@@ -59,4 +86,8 @@
 
     </div>
   </footer>
+<<<<<<< HEAD
 </template>
+=======
+</template>
+>>>>>>> deeab084d5997b89c4ed55a325bea112aeb0f33b

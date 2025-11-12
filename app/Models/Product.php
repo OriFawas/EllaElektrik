@@ -20,10 +20,15 @@ class Product extends Model
         'watt',
         'brand',
         'subkategori_product_id',
+        'specs',
     ];
 
     public function subkategori()
     {
         return $this->belongsTo(SubkategoriProduct::class, 'subkategori_product_id');
     }
+
+    protected $casts = [
+        'specs' => 'array',
+    ];
 }

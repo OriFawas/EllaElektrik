@@ -45,7 +45,19 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
-        return redirect()->intended(route('dashboard', absolute: false));
+        // Determine intended URL; avoid redirecting to JSON API endpoints (e.g. /api/*)
+        $intended = $request->session()->pull('url.intended');
+        $intendedPath = $intended ? parse_url($intended, PHP_URL_PATH) : null;
+        $isApiIntended = $intendedPath && str_starts_with($intendedPath, '/api/');
+
+        // Choose a safe post-login landing page based on role
+        $fallback = $user->role === 'admin' ? route('dashboard') : route('home');
+
+        if ($intended && ! $isApiIntended) {
+            return redirect()->to($intended);
+        }
+
+        return redirect()->to($fallback);
     }
 
     /**
