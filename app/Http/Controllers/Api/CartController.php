@@ -68,4 +68,15 @@ class CartController extends Controller
         $cart = $this->cartService->removeItem($user, $itemId);
         return response()->json($this->transform($cart));
     }
+
+        public function count()
+    {
+        $user = Auth::user();
+        $cart = $this->cartService->getActiveCart($user);
+
+        return response()->json([
+            'count' => $cart ? $cart->itemCount() : 0,
+        ]);
+    }
+
 }

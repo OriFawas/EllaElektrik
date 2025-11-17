@@ -69,9 +69,15 @@
         <!-- Keranjang -->
         <Link
           href="/cart"
-          class="flex items-center space-x-2 hover:text-gray-300 cursor-pointer transition"
+          class="flex items-center space-x-2 hover:text-gray-300 cursor-pointer relative"
         >
           <img src="/images/cart-icon.png" alt="Keranjang" class="h-5 w-5">
+          <span
+          v-if="cartCount > 0"
+          class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center"
+        >
+          {{ cartCount }}
+        </span>
         </Link>
 
         <!-- Jika belum login -->
@@ -96,11 +102,12 @@
               class="absolute right-0 mt-2 w-40 bg-white text-gray-800 rounded-md shadow-lg overflow-hidden z-50"
             >
               <Link
-                href="/profile"
+                href="/user/dashboard"
                 class="block px-4 py-2 hover:bg-gray-100 transition"
               >
-                Profile
+                Dashboard
               </Link>
+
               <button
                 @click="logout"
                 class="block w-full text-left px-4 py-2 hover:bg-gray-100 text-red-600 transition"
@@ -126,6 +133,7 @@ const results = ref([])
 const searchLoading = ref(false)
 const searchError = ref(null)
 let searchTimer = null
+const cartCount = ref(0)
 
 const toggleDropdown = () => {
   showDropdown.value = !showDropdown.value
@@ -169,6 +177,22 @@ const handleClickOutside = (e) => {
     searchOpen.value = false
   }
 }
+
+const fetchCartCount = async () => {
+  try {
+    const res = await fetch('/api/cart')
+    if (!res.ok) throw new Error('Gagal memuat keranjang')
+    const data = await res.json()
+    cartCount.value = data.item_count || 0
+  } catch (err) {
+    console.error(err)
+    cartCount.value = 0
+  }
+}
+
+onMounted(() => {
+  fetchCartCount()
+})
 
 onMounted(() => document.addEventListener('click', handleClickOutside))
 onUnmounted(() => document.removeEventListener('click', handleClickOutside))

@@ -14,14 +14,14 @@ Route::get('/', function () {
 })->name('home');
 
 // Update this dashboard route - add 'admin' to middleware
-Route::get('dashboard', function () {
+Route::get('/admin/dashboard', function () {
     return Inertia::render('Dashboard');
 })->middleware(['auth', 'verified', 'admin'])->name('dashboard'); // Added 'admin' here
 
 // Admin dashboard (utama)
-Route::get('/admin/dashboard', function () {
-    return Inertia::render('Dashboard');
-})->middleware(['auth', 'verified', 'admin'])->name('admin.dashboard');
+// Route::get('/admin/dashboard', function () {
+//     return Inertia::render('Dashboard');
+// })->middleware(['auth', 'verified', 'admin'])->name('admin.dashboard');
 
 // Admin produk
 use App\Models\KategoriProduct;
@@ -140,6 +140,18 @@ Route::get('/contact', function () {
         return Inertia::render('CheckoutPage');
     })->name('checkout');
 
+    Route::middleware(['auth', 'verified'])->prefix('user')->group(function () {
+    // Dashboard (Profil)
+    Route::get('/dashboard', function () {
+        return Inertia::render('User/Dashboard');
+    })->name('user.dashboard');
+
+    // Riwayat Pesanan
+    Route::get('/orders', function () {
+        return Inertia::render('User/Order');
+    })->name('user.order');
+});
+
 require __DIR__.'/settings.php';
 require __DIR__.'/auth.php';
 
@@ -149,4 +161,5 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/api/cart/items', [CartController::class, 'store']);
     Route::put('/api/cart/items/{itemId}', [CartController::class, 'update']);
     Route::delete('/api/cart/items/{itemId}', [CartController::class, 'destroy']);
+    Route::get('/api/cart/count', [CartController::class, 'count']);
 });
