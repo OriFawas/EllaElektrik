@@ -50,6 +50,17 @@ class HandleInertiaRequests extends Middleware
                 'role' => $request->user()->role,
                 'avatar' => $request->user()->avatar, // If you use avatars
                 'email_verified_at' => $request->user()->email_verified_at,
+                // Profile fields
+                'phone' => $request->user()->phone,
+                'province' => $request->user()->province,
+                'city' => $request->user()->city,
+                'address' => $request->user()->address,
+                'nik' => $request->user()->nik,
+                // Verification fields
+                'verification_status' => $request->user()->verification_status ?: 'unverified',
+                'verification_note' => $request->user()->verification_note,
+                'verified_at' => $request->user()->verified_at,
+                'ktp_path' => $request->user()->ktp_path,
                 'created_at' => $request->user()->created_at,
                 'updated_at' => $request->user()->updated_at,
             ] : null,

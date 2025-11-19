@@ -22,12 +22,16 @@ class User extends Authenticatable
      *
      * @var list<string>
      */
-    protected $fillable = [
-        'name',
-        'email',
-        'password',
-        'role', // Add role to fillable
-    ];
+        protected $fillable = [
+            'name',
+            'email',
+            'password',
+            'role', // Add role to fillable
+            // Profile fields
+            'nik', 'phone', 'province', 'city', 'address', 'ktp_path',
+            // Verification fields
+            'verification_status', 'verification_note', 'verified_at', 'verified_by',
+        ];
 
     /**
      * The attributes that should be hidden for serialization.
@@ -46,13 +50,11 @@ class User extends Authenticatable
      *
      * @return array<string, string>
      */
-    protected function casts(): array
-    {
-        return [
+        protected $casts = [
             'email_verified_at' => 'datetime',
+            'verified_at' => 'datetime',
             'password' => 'hashed',
         ];
-    }
 
     // Add helper methods for roles
     public function isAdmin(): bool

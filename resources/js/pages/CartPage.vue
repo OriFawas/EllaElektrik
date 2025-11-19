@@ -45,6 +45,7 @@ const updateQty = async (itemId, qty) => {
       body: JSON.stringify({ qty })
     })
     if (res.status === 401) { window.location.href = '/login'; return }
+    if (res.status === 419) { window.location.reload(); return }
     if (!res.ok) throw new Error('Gagal memperbarui jumlah')
     const data = await res.json()
     cart.value = { items: data.items, subtotal: data.subtotal, item_count: data.item_count }
@@ -63,6 +64,7 @@ const removeItem = async (itemId) => {
       credentials: 'same-origin',
     })
     if (res.status === 401) { window.location.href = '/login'; return }
+    if (res.status === 419) { window.location.reload(); return }
     if (!res.ok) throw new Error('Gagal menghapus item')
     const data = await res.json()
     cart.value = { items: data.items, subtotal: data.subtotal, item_count: data.item_count }

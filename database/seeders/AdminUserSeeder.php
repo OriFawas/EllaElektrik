@@ -12,20 +12,22 @@ class AdminUserSeeder extends Seeder
      */
     public function run(): void
     {
-       {
-    \App\Models\User::create([
-        'name' => 'Admin User',
-        'email' => 'admin@example.com',
-        'password' => bcrypt('admin123'), // Change this password!
-        'role' => \App\Models\User::ROLE_ADMIN,
-    ]);
+        \App\Models\User::firstOrCreate(
+            ['email' => 'admin@example.com'],
+            [
+                'name' => 'Admin User',
+                'password' => bcrypt('admin123'), // Change this password!
+                'role' => \App\Models\User::ROLE_ADMIN,
+            ]
+        );
 
-    \App\Models\User::create([
-        'name' => 'Regular User', 
-        'email' => 'user@example.com',
-        'password' => bcrypt('user123'), // Change this password!
-        'role' => \App\Models\User::ROLE_USER,
-    ]);
-}
+        \App\Models\User::firstOrCreate(
+            ['email' => 'user@example.com'],
+            [
+                'name' => 'Regular User',
+                'password' => bcrypt('user123'), // Change this password!
+                'role' => \App\Models\User::ROLE_USER,
+            ]
+        );
     }
 }

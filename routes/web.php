@@ -37,6 +37,18 @@ Route::get('/admin/products', function () {
     ]);
 })->middleware(['auth', 'verified', 'admin'])->name('admin.products');
 
+// Admin users (verification list) — static placeholder page
+Route::get('/admin/users', function () {
+    return Inertia::render('UserVerification');
+})->middleware(['auth', 'verified', 'admin'])->name('admin.users');
+
+// Admin users verification JSON endpoints
+Route::middleware(['auth', 'verified', 'admin'])->group(function () {
+    Route::get('/api/admin/users', [\App\Http\Controllers\Admin\UserVerificationController::class, 'index']);
+    Route::post('/api/admin/users/{user}/approve', [\App\Http\Controllers\Admin\UserVerificationController::class, 'approve']);
+    Route::post('/api/admin/users/{user}/reject', [\App\Http\Controllers\Admin\UserVerificationController::class, 'reject']);
+});
+
 // Product CRUD (store / update / destroy)
 Route::post('/admin/products', [ProductController::class, 'store'])
     ->middleware(['auth', 'verified', 'admin'])
@@ -150,7 +162,16 @@ Route::get('/contact', function () {
     Route::get('/orders', function () {
         return Inertia::render('User/Order');
     })->name('user.order');
+
+    // User profile + verification endpoints
+    Route::put('/profile', [\App\Http\Controllers\User\ProfileController::class, 'update'])
+        ->name('user.profile.update');
+    Route::post('/verification/submit', [\App\Http\Controllers\User\VerificationController::class, 'submit'])
+        ->name('user.verification.submit');
 });
+
+// Authenticated JSON profile endpoint
+Route::middleware(['auth'])->get('/api/me', [\App\Http\Controllers\User\ProfileController::class, 'me']);
 
 require __DIR__.'/settings.php';
 require __DIR__.'/auth.php';

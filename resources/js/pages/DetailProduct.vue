@@ -183,6 +183,11 @@ const addToCart = async () => {
         })
 
         if (res.status === 401) { router.visit('/login'); return }
+        if (res.status === 419) {
+            // CSRF/session expired — reload to refresh tokens and session
+            window.location.reload()
+            return
+        }
         if (!res.ok) {
             const text = await res.text()
             throw new Error(text || `Gagal menambahkan (${res.status})`)

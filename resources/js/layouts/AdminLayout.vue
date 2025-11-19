@@ -100,11 +100,9 @@
                             class="flex items-center gap-2 cursor-pointer"
                             @click="showDropdown = !showDropdown"
                         >
-                            <img
-                                src="/images/profileadmin.png"
-                                alt="Profile"
-                                class="w-9 h-9 rounded-full border border-gray-300 object-cover"
-                            />
+                            <span class="inline-flex h-9 w-9 items-center justify-center rounded-full border border-gray-300 bg-gray-100 text-gray-500 text-sm font-medium">
+                                AD
+                            </span>
                             <span class="font-medium text-gray-700">Admin</span>
                             <i class="ri-arrow-down-s-line text-gray-600"></i>
                         </div>
