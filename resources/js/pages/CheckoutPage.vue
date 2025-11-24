@@ -1,10 +1,10 @@
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted} from 'vue'
 import { Link } from '@inertiajs/vue3'
 import HeaderLayout from '@/components/HeaderLayout.vue'
 import FooterLayout from '@/components/FooterLayout.vue'
 
-const codChecked = ref(false)
+const codChecked = ref(true)
 
 // Cart state loaded from backend
 const loading = ref(false)
@@ -98,7 +98,7 @@ onMounted(fetchCart)
 
         <!-- Checkbox -->
         <label class="flex items-start gap-3 border p-4 cursor-pointer">
-          <input type="checkbox" v-model="codChecked" class="mt-1" />
+          <input type="checkbox" checked disabled class="mt-1" />
           <div>
             <p class="font-medium">Cash On Delivery</p>
             <p class="text-sm text-gray-600">Bayar Barang di Toko</p>
@@ -124,7 +124,7 @@ onMounted(fetchCart)
 
         <!-- Tombol Pesan -->
         <Link
-          href="/checkout/confirm"
+          href="/user/status-order"
           :class="codChecked ? 'bg-black hover:bg-gray-800' : 'bg-gray-400 cursor-not-allowed'"
           class="mt-8 w-full py-3 text-center text-white font-semibold block"
           :disabled="!codChecked"

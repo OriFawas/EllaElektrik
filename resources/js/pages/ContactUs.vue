@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { Head } from '@inertiajs/vue3';
+import HeaderLayout from '../components/HeaderLayout.vue'
 
 const form = ref({
   firstName: '',
@@ -10,13 +11,24 @@ const form = ref({
 });
 
 function handleSubmit() {
-  console.log('Data form:', form.value);
-  alert('Pesan terkirim! (Belum ke server)');
+  const phone = "6285641768017"; // GANTI ke nomor WhatsApp tujuan
+
+  const text =
+    `Halo, saya *${form.value.firstName} ${form.value.lastName}*.` +
+    `%0AEmail: ${form.value.email}` +
+    `%0A%0APesan:%0A${form.value.message}`;
+
+  const url = `https://wa.me/${phone}?text=${text}`;
+
+  window.open(url, "_blank");
 }
 </script>
 
+
 <template>
   <Head title="Contact Us - Ella Elektrik" />
+
+  <HeaderLayout />
 
   <div class="min-h-screen bg-gray-50 pt-24 pb-12 px-4 sm:px-6 lg:px-8">
     <div class="max-w-6xl mx-auto">
@@ -30,11 +42,11 @@ function handleSubmit() {
             <div class="space-y-4">
               <div class="flex items-center space-x-3">
                 <i class="fas fa-phone"></i>
-                <span>+1012 3456 789</span>
+                <span>+6285641768017</span>
               </div>
               <div class="flex items-center space-x-3">
                 <i class="fas fa-envelope"></i>
-                <span>demo@gmail.com</span>
+                <span>Noerscahya@gmail.com</span>
               </div>
             </div>
           </div>

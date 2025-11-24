@@ -12,100 +12,101 @@ import { LoaderCircle } from 'lucide-vue-next';
 </script>
 
 <template>
-    <AuthBase
-        title="Create an account"
-        description="Enter your details below to create your account"
-    >
-        <Head title="Register" />
+  <AuthBase>
+    <Head title="Register" />
 
-        <Form
-            v-bind="RegisteredUserController.store.form()"
-            :reset-on-success="['password', 'password_confirmation']"
-            v-slot="{ errors, processing }"
-            class="flex flex-col gap-6"
+    <div class="w-full max-w-md mx-auto bg-white shadow-md rounded-xl p-8 space-y-6 border">
+      <h1 class="text-2xl font-bold text-center">Buat Akun</h1>
+      <p class="text-center text-gray-500 -mt-3">
+        Silahkan daftar terlebih dahulu
+      </p>
+
+      <!-- FORM -->
+      <Form
+        v-bind="RegisteredUserController.store.form()"
+        :reset-on-success="['password', 'password_confirmation']"
+        v-slot="{ errors, processing }"
+        class="space-y-5"
+      >
+        <!-- Full Name -->
+        <div class="space-y-1">
+          <Label for="name" class="font-medium">Nama</Label>
+          <Input
+            id="name"
+            type="text"
+            name="name"
+            required
+            autocomplete="name"
+            placeholder="example"
+            :tabindex="1"
+          />
+          <InputError :message="errors.name" />
+        </div>
+
+        <!-- Email -->
+        <div class="space-y-1">
+          <Label for="email">Alamat Email</Label>
+          <Input
+            id="email"
+            type="email"
+            name="email"
+            required
+            autocomplete="email"
+            placeholder="email@example.com"
+            :tabindex="2"
+          />
+          <InputError :message="errors.email" />
+        </div>
+
+        <!-- Password -->
+        <div class="space-y-1">
+          <Label for="password">Password</Label>
+          <Input
+            id="password"
+            type="password"
+            name="password"
+            required
+            autocomplete="new-password"
+            placeholder=""
+            :tabindex="3"
+          />
+          <InputError :message="errors.password" />
+        </div>
+
+        <!-- Confirm Password -->
+        <div class="space-y-1">
+          <Label for="password_confirmation">Konfirmasi Password</Label>
+          <Input
+            id="password_confirmation"
+            type="password"
+            name="password_confirmation"
+            required
+            autocomplete="new-password"
+            placeholder=""
+            :tabindex="4"
+          />
+          <InputError :message="errors.password_confirmation" />
+        </div>
+
+        <!-- Submit Button -->
+        <Button
+          type="submit"
+          class="w-full py-2 text-white bg-blue-600 hover:bg-blue-700 rounded-lg"
+          :disabled="processing"
+          :tabindex="5"
         >
-            <div class="grid gap-6">
-                <div class="grid gap-2">
-                    <Label for="name">Name</Label>
-                    <Input
-                        id="name"
-                        type="text"
-                        required
-                        autofocus
-                        :tabindex="1"
-                        autocomplete="name"
-                        name="name"
-                        placeholder="Full name"
-                    />
-                    <InputError :message="errors.name" />
-                </div>
+          <LoaderCircle v-if="processing" class="h-4 w-4 animate-spin mr-2" />
+          Buat Akun
+        </Button>
 
-                <div class="grid gap-2">
-                    <Label for="email">Email address</Label>
-                    <Input
-                        id="email"
-                        type="email"
-                        required
-                        :tabindex="2"
-                        autocomplete="email"
-                        name="email"
-                        placeholder="email@example.com"
-                    />
-                    <InputError :message="errors.email" />
-                </div>
-
-                <div class="grid gap-2">
-                    <Label for="password">Password</Label>
-                    <Input
-                        id="password"
-                        type="password"
-                        required
-                        :tabindex="3"
-                        autocomplete="new-password"
-                        name="password"
-                        placeholder="Password"
-                    />
-                    <InputError :message="errors.password" />
-                </div>
-
-                <div class="grid gap-2">
-                    <Label for="password_confirmation">Confirm password</Label>
-                    <Input
-                        id="password_confirmation"
-                        type="password"
-                        required
-                        :tabindex="4"
-                        autocomplete="new-password"
-                        name="password_confirmation"
-                        placeholder="Confirm password"
-                    />
-                    <InputError :message="errors.password_confirmation" />
-                </div>
-
-                <Button
-                    type="submit"
-                    class="mt-2 w-full"
-                    tabindex="5"
-                    :disabled="processing"
-                    data-test="register-user-button"
-                >
-                    <LoaderCircle
-                        v-if="processing"
-                        class="h-4 w-4 animate-spin"
-                    />
-                    Create account
-                </Button>
-            </div>
-
-            <div class="text-center text-sm text-muted-foreground">
-                Already have an account?
-                <TextLink
-                    :href="login()"
-                    class="underline underline-offset-4"
-                    :tabindex="6"
-                    >Log in</TextLink
-                >
-            </div>
-        </Form>
-    </AuthBase>
+        <!-- Login Link -->
+        <p class="text-center text-sm text-gray-600">
+          Sudah punya akun?
+          <TextLink :href="login()" class="ml-1 font-medium text-blue-600 hover:underline">
+            Log in
+          </TextLink>
+        </p>
+      </Form>
+    </div>
+  </AuthBase>
 </template>

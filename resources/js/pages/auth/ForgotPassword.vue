@@ -11,61 +11,64 @@ import { Form, Head } from '@inertiajs/vue3';
 import { LoaderCircle } from 'lucide-vue-next';
 
 defineProps<{
-    status?: string;
+  status?: string;
 }>();
 </script>
 
 <template>
-    <AuthLayout
-        title="Forgot password"
-        description="Enter your email to receive a password reset link"
-    >
-        <Head title="Forgot password" />
+  <AuthLayout>
+    <Head title="Forgot Password" />
 
-        <div
-            v-if="status"
-            class="mb-4 text-center text-sm font-medium text-green-600"
+    <div class="w-full max-w-md mx-auto bg-white shadow-md rounded-xl p-8 space-y-6 border">
+      <h1 class="text-2xl font-bold text-center">Lupa Password?</h1>
+      <p class="text-center text-gray-500 -mt-3">
+        Masukkan email anda untuk menerima tautan reset password
+      </p>
+
+      <!-- STATUS SUCCESS -->
+      <div v-if="status" class="text-center text-sm font-medium text-green-600">
+        {{ status }}
+      </div>
+
+      <Form
+        v-bind="PasswordResetLinkController.store.form()"
+        v-slot="{ errors, processing }"
+        class="space-y-5"
+      >
+        <!-- EMAIL -->
+        <div class="space-y-1">
+          <Label for="email">Email</Label>
+          <Input
+            id="email"
+            type="email"
+            name="email"
+            autocomplete="off"
+            autofocus
+            placeholder="email@example.com"
+          />
+          <InputError :message="errors.email" />
+        </div>
+
+        <!-- SUBMIT -->
+        <Button
+          class="w-full py-2 text-white bg-blue-600 hover:bg-blue-700 rounded-lg"
+          :disabled="processing"
         >
-            {{ status }}
-        </div>
+          <LoaderCircle
+            v-if="processing"
+            class="h-4 w-4 animate-spin mr-2"
+          />
+          Kirim Link Reset Password
+        </Button>
 
-        <div class="space-y-6">
-            <Form
-                v-bind="PasswordResetLinkController.store.form()"
-                v-slot="{ errors, processing }"
-            >
-                <div class="grid gap-2">
-                    <Label for="email">Email address</Label>
-                    <Input
-                        id="email"
-                        type="email"
-                        name="email"
-                        autocomplete="off"
-                        autofocus
-                        placeholder="email@example.com"
-                    />
-                    <InputError :message="errors.email" />
-                </div>
-
-                <div class="my-6 flex items-center justify-start">
-                    <Button
-                        class="w-full"
-                        :disabled="processing"
-                        data-test="email-password-reset-link-button"
-                    >
-                        <LoaderCircle
-                            v-if="processing"
-                            class="h-4 w-4 animate-spin"
-                        />
-                        Email password reset link
-                    </Button>
-                </div>
-            </Form>
-
-            <div class="space-x-1 text-center text-sm text-muted-foreground">
-                <span>Or, return to</span>
-                <TextLink :href="login()">log in</TextLink>
-            </div>
-        </div>
-    </AuthLayout>
+        <!-- BACK TO LOGIN -->
+        <p class="text-center text-sm text-gray-600 pt-1">
+          Ingat password?
+          <TextLink :href="login()" class="ml-1 font-medium text-blue-600 hover:underline">
+            Log in
+          </TextLink>
+        </p>
+      </Form>
+    </div>
+  </AuthLayout>
 </template>

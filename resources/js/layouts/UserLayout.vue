@@ -20,7 +20,7 @@
           class="block px-4 py-2 rounded font-medium text-white hover:bg-gray-700 transition"
           :class="{ 'bg-blue-600': $page.url.startsWith('/user/orders') }"
         >
-          Riwayat Pesanan
+          Pesanan
         </a>
       </nav>
     </aside>

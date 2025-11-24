@@ -1,7 +1,7 @@
 <template>
     <div class="flex min-h-screen bg-gray-100">
         <!-- Sidebar -->
-        <aside class="w-64 bg-gray-800 text-white flex flex-col">
+        <aside class="w-64 bg-gray-800 text-white flex flex-col sticky top-0 h-screen">
             <div class="p-4 text-xl font-semibold">Ella Elektrik</div>
             <nav class="flex-1">
                 <ul>
@@ -67,7 +67,7 @@
         <!-- Main content -->
         <div class="flex-1 flex flex-col">
             <!-- Header -->
-            <header class="bg-white shadow flex items-center justify-between px-6 py-4">
+            <header class="sticky top-0 z-50 bg-white shadow flex items-center justify-between px-6 py-4">
                 <!-- Search -->
                 <div class="flex items-center gap-2 w-1/3">
                     <i class="ri-search-line text-gray-400 text-lg"></i>

@@ -129,7 +129,7 @@ onMounted(async () => {
     <!-- Main Content -->
     <main class="flex flex-1 px-12 py-8 gap-10 pt-29">
       <!-- Sidebar Filter -->
-      <aside class="w-1/4 space-y-6">
+      <aside class="w-1/4 space-y-6 sticky top-30 self-start">
         <div class="flex justify-between items-center">
           <h2 class="font-semibold text-lg mb-3">Filter</h2>
         </div>

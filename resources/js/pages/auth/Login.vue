@@ -19,91 +19,98 @@ defineProps<{
 </script>
 
 <template>
-    <AuthBase
-        title="Log in to your account"
-        description="Enter your email and password below to log in"
-    >
-        <Head title="Log in" />
+  <AuthBase>
+    <Head title="Log in" />
 
-        <div
-            v-if="status"
-            class="mb-4 text-center text-sm font-medium text-green-600"
-        >
-            {{ status }}
+    <div class="w-full max-w-md mx-auto bg-white shadow-md rounded-xl p-8 space-y-6 border">
+      <h1 class="text-2xl font-bold text-center">Hi, Selamat Datang!</h1>
+      <p class="text-center text-gray-500 -mt-3">
+        Login dengan Email
+      </p>
+
+      <!-- Status message -->
+      <div
+        v-if="status"
+        class="text-center text-sm font-medium text-green-600"
+      >
+        {{ status }}
+      </div>
+
+      <!-- FORM -->
+      <Form
+        v-bind="AuthenticatedSessionController.store.form()"
+        :reset-on-success="['password']"
+        v-slot="{ errors, processing }"
+        class="space-y-5"
+      >
+        <!-- Email -->
+        <div class="space-y-1">
+          <Label for="email">Email</Label>
+          <Input
+            id="email"
+            type="email"
+            name="email"
+            required
+            autocomplete="email"
+            placeholder="email@example.com"
+            :tabindex="1"
+          />
+          <InputError :message="errors.email" />
         </div>
 
-        <Form
-            v-bind="AuthenticatedSessionController.store.form()"
-            :reset-on-success="['password']"
-            v-slot="{ errors, processing }"
-            class="flex flex-col gap-6"
+        <!-- Password -->
+        <div class="space-y-1">
+        <Label for="password">Password</Label>
+
+        <Input
+            id="password"
+            type="password"
+            name="password"
+            required
+            autocomplete="current-password"
+            placeholder=""
+            :tabindex="2"
+        />
+        <InputError :message="errors.password" />
+
+        <!-- Lupa password dipindah ke bawah -->
+        <div class="text-right pt-1">
+            <TextLink
+            v-if="canResetPassword"
+            :href="request()"
+            class="text-sm font-medium text-blue-600 hover:underline"
+            >
+            Lupa password?
+            </TextLink>
+        </div>
+        </div>
+
+
+        <!-- Remember Me -->
+        <label class="flex items-center space-x-2 cursor-pointer">
+          <Checkbox id="remember" name="remember" :tabindex="3" />
+          <span class="text-sm">Remember me</span>
+        </label>
+
+        <!-- Submit -->
+        <Button
+          type="submit"
+          class="w-full py-2 text-white bg-blue-600 hover:bg-blue-700 rounded-lg"
+          :disabled="processing"
+          :tabindex="4"
         >
-            <div class="grid gap-6">
-                <div class="grid gap-2">
-                    <Label for="email">Email address</Label>
-                    <Input
-                        id="email"
-                        type="email"
-                        name="email"
-                        required
-                        autofocus
-                        :tabindex="1"
-                        autocomplete="email"
-                        placeholder="email@example.com"
-                    />
-                    <InputError :message="errors.email" />
-                </div>
+          <LoaderCircle v-if="processing" class="h-4 w-4 animate-spin mr-2" />
+          Log in
+        </Button>
 
-                <div class="grid gap-2">
-                    <div class="flex items-center justify-between">
-                        <Label for="password">Password</Label>
-                        <TextLink
-                            v-if="canResetPassword"
-                            :href="request()"
-                            class="text-sm"
-                            :tabindex="5"
-                        >
-                            Forgot password?
-                        </TextLink>
-                    </div>
-                    <Input
-                        id="password"
-                        type="password"
-                        name="password"
-                        required
-                        :tabindex="2"
-                        autocomplete="current-password"
-                        placeholder="Password"
-                    />
-                    <InputError :message="errors.password" />
-                </div>
-
-                <div class="flex items-center justify-between">
-                    <Label for="remember" class="flex items-center space-x-3">
-                        <Checkbox id="remember" name="remember" :tabindex="3" />
-                        <span>Remember me</span>
-                    </Label>
-                </div>
-
-                <Button
-                    type="submit"
-                    class="mt-4 w-full"
-                    :tabindex="4"
-                    :disabled="processing"
-                    data-test="login-button"
-                >
-                    <LoaderCircle
-                        v-if="processing"
-                        class="h-4 w-4 animate-spin"
-                    />
-                    Log in
-                </Button>
-            </div>
-
-            <div class="text-center text-sm text-muted-foreground">
-                Don't have an account?
-                <TextLink :href="register()" :tabindex="5">Sign up</TextLink>
-            </div>
-        </Form>
-    </AuthBase>
+        <!-- Register Link -->
+        <p class="text-center text-sm text-gray-600">
+          Belum punya akun?
+          <TextLink :href="register()" class="ml-1 font-medium text-blue-600 hover:underline">
+            Daftar
+          </TextLink>
+        </p>
+      </Form>
+    </div>
+  </AuthBase>
 </template>

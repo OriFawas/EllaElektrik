@@ -62,6 +62,10 @@ Route::delete('/admin/products/{product}', [ProductController::class, 'destroy']
     ->middleware(['auth', 'verified', 'admin'])
     ->name('admin.products.destroy');
 
+    Route::get('/admin/orders', function () {
+    return Inertia::render('OrderDashboard');
+    })->middleware(['auth', 'verified', 'admin'])->name('admin.orders');
+
 // Halaman Shop (user)
 Route::get('/shop/{category}', [ShopController::class, 'index'])
     ->name('shop');
@@ -162,6 +166,11 @@ Route::get('/contact', function () {
     Route::get('/orders', function () {
         return Inertia::render('User/Order');
     })->name('user.order');
+
+    // Halaman Status Order
+    Route::get('/status-order', function () {
+        return Inertia::render('StatusOrder');
+    })->name('status.order');
 
     // User profile + verification endpoints
     Route::put('/profile', [\App\Http\Controllers\User\ProfileController::class, 'update'])
