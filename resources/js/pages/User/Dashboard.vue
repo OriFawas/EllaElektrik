@@ -17,6 +17,15 @@ const form = {
   ktpName: ''
 }
 
+const errors = ref({
+  nik: '',
+  name: '',
+  phone: '',
+  province: '',
+  city: '',
+  address: ''
+})
+
 const onFileChange = async (e) => {
   const file = e.target.files[0]
   if (file) {
@@ -61,6 +70,17 @@ onMounted(async () => {
   } catch {}
 })
 
+const clearErrors = () => {
+  errors.value = {
+    nik: '',
+    name: '',
+    phone: '',
+    province: '',
+    city: '',
+    address: ''
+  }
+}
+
 const submit = async () => {
   try {
     const csrf = (() => {
@@ -89,11 +109,22 @@ const submit = async () => {
       })
     })
     let saved = null
-    if (!res.ok) {
+      if (!res.ok) {
       const err = await res.json().catch(() => ({}))
-      const msg = err?.message || (err?.errors ? Object.values(err.errors).flat().join(', ') : '')
-      throw new Error(msg || 'Gagal menyimpan profil')
+
+      // Jika ada errors dari Laravel
+      if (err?.errors) {
+        clearErrors()
+        Object.keys(err.errors).forEach(key => {
+          errors.value[key] = err.errors[key][0]   // ambil pesan pertama
+        })
+        throw new Error("Periksa kembali input Anda")
+      }
+
+      const msg = err?.message || 'Gagal menyimpan profil'
+      throw new Error(msg)
     }
+
     saved = await res.json().catch(() => null)
     if (saved && saved.user) {
       form.name = saved.user.name ?? form.name
@@ -192,6 +223,9 @@ const statusMeta = computed(() => {
           <div>
             <label class="text-sm font-medium">NIK</label>
             <input v-model="form.nik" type="text" class="mt-1 w-full border rounded px-3 py-2" />
+            <p v-if="errors.nik" class="text-red-600 text-sm mt-1">
+              {{ errors.nik }}
+            </p>
           </div>
         </div>
 

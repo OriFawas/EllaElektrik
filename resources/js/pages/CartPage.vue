@@ -83,6 +83,15 @@ onMounted(fetchCart)
     <!-- Konten -->
     <main class="flex-1">
       <h1 class="text-2xl font-semibold px-8 pt-8">Keranjangmu</h1>
+      <div class="px-8 mt-2">
+      <Link 
+        href="/shop/Elektronik-Rumah-Tangga" 
+        class="text-blue-600 hover:underline text-lg font-medium"
+      >
+        Lanjut Belanja
+      </Link>
+    </div>
+
 
       <!-- Loading / Error / Empty states -->
       <div v-if="loading" class="px-8 py-16 text-center text-gray-500">Memuat keranjang…</div>
@@ -126,7 +135,7 @@ onMounted(fetchCart)
 
             <div v-for="item in cart.items" :key="item.id" class="flex justify-between">
               <span>{{ item.name }}</span>
-              <span>Rp. {{ Number(item.unit_price || item.unit_price_snapshot || 0).toLocaleString() }} × {{ item.qty }}</span>
+              <span>Rp. {{ Number(item.line_total).toLocaleString() }}</span>
             </div>
 
             <hr class="my-2" />

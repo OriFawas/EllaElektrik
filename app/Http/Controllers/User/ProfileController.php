@@ -38,6 +38,8 @@ class ProfileController extends Controller
             'city' => ['nullable', 'string', 'max:100'],
             'address' => ['nullable', 'string', 'max:2000'],
             'nik' => ['nullable', 'string', 'regex:/^\d{16}$/'],
+        ], [
+            'nik.regex' => 'NIK harus 16 digit angka.',
         ]);
 
         $user->fill($data)->save();
