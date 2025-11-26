@@ -48,6 +48,9 @@ class RegisteredUserController extends Controller
 
         $request->session()->regenerate();
 
-        return to_route('dashboard');
+        // Generate initial OTP for email verification
+        app(\App\Http\Controllers\Auth\OtpController::class)->generateAndSendOtp($user);
+
+        return to_route('otp.notice');
     }
 }
