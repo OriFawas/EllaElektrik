@@ -95,7 +95,7 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { Head } from '@inertiajs/vue3'
+import { Head, router } from '@inertiajs/vue3'
 import AdminLayout from '@/layouts/AdminLayout.vue'
 
 interface Order {
@@ -108,44 +108,38 @@ interface Order {
   status?: string
 }
 
-const pesananUser = ref<Order[]>([
-  { id: 1, nik: '3201123456789001', nama: 'Budi', products: 'Kipas Angin', totalPrice: 150000, createdAt: '2025-10-28' },
-  { id: 3, nik: '3201987654321002', nama: 'Zize', products: 'Lampu LED', totalPrice: 210000, createdAt: '2025-10-27' },
-])
-
-const riwayat = ref<Order[]>([
-  { id: 2, nik: '3201123456789003', nama: 'Sari', products: 'TV LED', totalPrice: 3500000, createdAt: '2025-10-26', status: 'Selesai' },
-  { id: 4, nik: '3201987654321004', nama: 'Agus', products: 'Mesin Cuci', totalPrice: 2500000, createdAt: '2025-10-25', status: 'Selesai' },
-])
+const props = defineProps<{
+  pesananUser: Order[]
+  riwayat: Order[]
+}>()
 
 const searchQuery = ref('')
 
 const filteredPesananUser = computed(() =>
-  pesananUser.value.filter(o =>
+  props.pesananUser.filter(o =>
     o.nama.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
     o.products.toLowerCase().includes(searchQuery.value.toLowerCase())
   )
 )
 
 const filteredRiwayat = computed(() =>
-  riwayat.value.filter(o =>
+  props.riwayat.filter(o =>
     o.nama.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
     o.products.toLowerCase().includes(searchQuery.value.toLowerCase())
   )
 )
 
 function completeOrder(order: Order) {
-  riwayat.value.push({
-    ...order,
-    status: 'Selesai',
-    createdAt: new Date().toISOString().split('T')[0],
+  router.post(`/admin/orders/${order.id}/complete`, {}, {
+    preserveScroll: true,
   })
-  pesananUser.value = pesananUser.value.filter(item => item.id !== order.id)
 }
 
 function confirmDeleteOrder(order: Order) {
   if (confirm(`Apakah Anda yakin ingin menghapus pesanan dari ${order.nama}?`)) {
-    pesananUser.value = pesananUser.value.filter(item => item.id !== order.id)
+    router.delete(`/admin/orders/${order.id}`, {
+      preserveScroll: true,
+    })
   }
 }
 </script>

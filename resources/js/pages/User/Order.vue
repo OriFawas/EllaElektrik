@@ -1,54 +1,13 @@
 <script setup>
-import { Head } from '@inertiajs/vue3'
+import { Head, Link } from '@inertiajs/vue3'
 import UserLayout from '@/layouts/UserLayout.vue'
 import HeaderLayout from '@/components/HeaderLayout.vue'
 import FooterLayout from '@/components/FooterLayout.vue'
-import { ref } from 'vue'
 
-// Pesanan Aktif (hanya status "Siap Diambil")
-const activeOrders = [
-  {
-    id: 101,
-    name: 'Kipas Karakter',
-    price: 'Rp 100.000',
-    date: '15 November 2025',
-    image: '/images/products/kipas.jpg',
-    status: 'Siap Diambil',
-  },
-  {
-    id: 102,
-    name: 'Blender',
-    price: 'Rp 150.000',
-    date: '15 November 2025',
-    image: '/images/products/blender.jpg',
-    status: 'Siap Diambil',
-  },
-]
-
-// Riwayat pesanan selesai
-const historyOrders = [
-  {
-    id: 1,
-    name: 'Lampu Tidur',
-    price: 'Rp 8.000',
-    date: '12 November 2025',
-    image: '/images/products/lampu.jpg',
-  },
-  {
-    id: 2,
-    name: 'Blender',
-    price: 'Rp 150.000',
-    date: '11 November 2025',
-    image: '/images/products/blender.jpg',
-  },
-  {
-    id: 3,
-    name: 'Kipas Karakter',
-    price: 'Rp 100.000',
-    date: '10 November 2025',
-    image: '/images/products/kipas.jpg',
-  },
-]
+const props = defineProps({
+  activeOrders: Array,
+  historyOrders: Array
+})
 </script>
 
 <template>
@@ -63,11 +22,12 @@ const historyOrders = [
         <div>
           <h1 class="text-2xl font-semibold mb-6">Pesanan Aktif</h1>
 
-          <div v-if="activeOrders.length" class="space-y-4">
-            <div
-              v-for="order in activeOrders"
+          <div v-if="props.activeOrders.length" class="space-y-4">
+            <Link
+              v-for="order in props.activeOrders"
               :key="order.id"
-              class="flex items-center justify-between border-b pb-4"
+              :href="`/orders/${order.id}`"
+              class="flex items-center justify-between border-b pb-4 hover:bg-gray-50 transition-colors cursor-pointer"
             >
               <div class="flex items-center space-x-4">
                 <img
@@ -81,13 +41,13 @@ const historyOrders = [
 
                   <!-- Status hanya Siap Diambil -->
                   <p class="text-green-600 text-sm font-semibold mt-1">
-                    Siap Diambil
+                    {{ order.status }} ({{ order.days_left }} hari tersisa)
                   </p>
                 </div>
               </div>
 
               <p class="text-gray-800 font-semibold">{{ order.price }}</p>
-            </div>
+            </Link>
           </div>
 
           <div v-else class="text-center text-gray-500 py-10">
@@ -99,9 +59,9 @@ const historyOrders = [
         <div>
           <h1 class="text-2xl font-semibold mb-6">Pesanan Selesai</h1>
 
-          <div v-if="historyOrders.length" class="space-y-4">
+          <div v-if="props.historyOrders.length" class="space-y-4">
             <div
-              v-for="order in historyOrders"
+              v-for="order in props.historyOrders"
               :key="order.id"
               class="flex items-center justify-between border-b pb-4"
             >

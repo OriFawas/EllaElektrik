@@ -1,29 +1,16 @@
 <script setup>
 import HeaderLayout from '@/components/HeaderLayout.vue'
 import FooterLayout from '@/components/FooterLayout.vue'
-import { ref, computed } from 'vue'
+import { computed } from 'vue'
 
-const order = ref({
-  id: "ORD-2025-001",
-  tanggal: "2025-11-19", // pakai format YYYY-MM-DD untuk hitung tanggal
-  subtotal: 258000,
-  biayaLayanan: 0,
-  total: 258000,
-  status: "ST1" // ST1 = dibuat, ST2 = selesai
+const props = defineProps({
+  order: Object
 })
 
-// Hitung sisa hari untuk ST1 (7 hari)
+// Use days_left from backend
 const daysLeft = computed(() => {
-  if (order.value.status !== "ST1") return null
-
-  const today = new Date()
-  const startDate = new Date(order.value.tanggal)
-
-  const endDate = new Date(startDate)
-  endDate.setDate(endDate.getDate() + 7)
-
-  const difference = Math.ceil((endDate - today) / (1000 * 60 * 60 * 24))
-  return difference > 0 ? difference : 0
+  if (props.order.status !== "ST1") return null
+  return props.order.days_left
 })
 </script>
 
@@ -34,25 +21,25 @@ const daysLeft = computed(() => {
     <section class="container mx-auto text-center py-16 px-6">
       <h2 class="text-2xl font-semibold mb-6">Informasi Pemesanan</h2>
 
-      <p>ID. Order : {{ order.id }}</p>
-      <p>Tanggal Pemesanan : {{ order.tanggal }}</p>
+      <p>ID. Order : {{ props.order.id }}</p>
+      <p>Tanggal Pemesanan : {{ props.order.tanggal }}</p>
 
       <div class="max-w-lg mx-auto text-sm mt-10">
         <div class="flex justify-between mb-2">
           <span>Subtotal</span>
-          <span>Rp. {{ order.subtotal.toLocaleString() }}</span>
+          <span>Rp. {{ Number(props.order.subtotal).toLocaleString() }}</span>
         </div>
 
         <div class="flex justify-between mb-2">
           <span>Biaya Layanan</span>
-          <span>Rp. {{ order.biayaLayanan.toLocaleString() }}</span>
+          <span>Rp. {{ Number(props.order.biayaLayanan).toLocaleString() }}</span>
         </div>
 
         <div class="border-t my-4"></div>
 
         <div class="flex justify-between font-semibold">
           <span>Total</span>
-          <span>Rp. {{ order.total.toLocaleString() }}</span>
+          <span>Rp. {{ Number(props.order.total).toLocaleString() }}</span>
         </div>
       </div>
 
@@ -62,20 +49,20 @@ const daysLeft = computed(() => {
 
         <div class="flex justify-center items-center gap-6 text-lg">
 
-          <span :class="order.status === 'ST1' ? 'font-extrabold' : 'text-gray-400'">
+          <span :class="props.order.status === 'ST1' ? 'font-extrabold' : 'text-gray-400'">
             Pesanan Bisa Diambil
           </span>
 
           <div class="w-16 h-[2px] bg-gray-400"></div>
 
-          <span :class="order.status === 'ST2' ? 'font-extrabold' : 'text-gray-400'">
+          <span :class="props.order.status === 'ST2' ? 'font-extrabold' : 'text-gray-400'">
             Pesanan Selesai
           </span>
 
         </div>
 
         <!-- Hitung Mundur (hanya saat ST1) -->
-        <p v-if="order.status === 'ST1'" class="mt-4 text-sm text-gray-600">
+        <p v-if="props.order.status === 'ST1'" class="mt-4 text-sm text-gray-600">
           {{ daysLeft }} hari tersisa
         </p>
 

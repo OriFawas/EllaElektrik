@@ -1,6 +1,6 @@
 <script setup>
 import { ref, computed, onMounted} from 'vue'
-import { Link } from '@inertiajs/vue3'
+import { router } from '@inertiajs/vue3'
 import HeaderLayout from '@/components/HeaderLayout.vue'
 import FooterLayout from '@/components/FooterLayout.vue'
 
@@ -35,6 +35,17 @@ const fetchCart = async () => {
 
 const subtotal = computed(() => Number(cart.value.subtotal || 0))
 const total = computed(() => subtotal.value + serviceFee.value)
+
+const createOrder = () => {
+  if (!codChecked.value || cart.value.items.length === 0) return
+  loading.value = true
+  router.post('/orders', {}, {
+    onFinish: () => (loading.value = false),
+    onError: (errors) => {
+      error.value = errors.order || errors.cart || 'Gagal membuat pesanan'
+    }
+  })
+}
 
 const removeItem = async (id) => {
   try {
@@ -123,14 +134,14 @@ onMounted(fetchCart)
         </div>
 
         <!-- Tombol Pesan -->
-        <Link
-          href="/user/status-order"
-          :class="codChecked ? 'bg-black hover:bg-gray-800' : 'bg-gray-400 cursor-not-allowed'"
+        <button
+          @click="createOrder"
+          :disabled="!codChecked || loading || cart.items.length === 0"
+          :class="codChecked && cart.items.length > 0 ? 'bg-black hover:bg-gray-800' : 'bg-gray-400 cursor-not-allowed'"
           class="mt-8 w-full py-3 text-center text-white font-semibold block"
-          :disabled="!codChecked"
         >
-          Pesan Sekarang
-        </Link>
+          {{ loading ? 'Memproses...' : 'Pesan Sekarang' }}
+        </button>
 
       </div>
     </div>

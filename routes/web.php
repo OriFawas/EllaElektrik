@@ -62,9 +62,14 @@ Route::delete('/admin/products/{product}', [ProductController::class, 'destroy']
     ->middleware(['auth', 'verified', 'admin'])
     ->name('admin.products.destroy');
 
-    Route::get('/admin/orders', function () {
-    return Inertia::render('OrderDashboard');
-    })->middleware(['auth', 'verified', 'admin'])->name('admin.orders');
+    Route::get('/admin/orders', [\App\Http\Controllers\Admin\AdminOrderController::class, 'index'])
+        ->middleware(['auth', 'verified', 'admin'])->name('admin.orders');
+    
+    Route::post('/admin/orders/{order}/complete', [\App\Http\Controllers\Admin\AdminOrderController::class, 'complete'])
+        ->middleware(['auth', 'verified', 'admin'])->name('admin.orders.complete');
+    
+    Route::delete('/admin/orders/{order}', [\App\Http\Controllers\Admin\AdminOrderController::class, 'destroy'])
+        ->middleware(['auth', 'verified', 'admin'])->name('admin.orders.destroy');
 
 // Halaman Shop (user)
 Route::get('/shop/{category}', [ShopController::class, 'index'])
@@ -156,6 +161,12 @@ Route::get('/contact', function () {
         return Inertia::render('CheckoutPage');
     })->name('checkout');
 
+    // Order routes
+    Route::middleware(['auth', 'verified'])->group(function () {
+        Route::post('/orders', [\App\Http\Controllers\OrderController::class, 'store'])->name('orders.store');
+        Route::get('/orders/{order}', [\App\Http\Controllers\OrderController::class, 'show'])->name('orders.show');
+    });
+
     Route::middleware(['auth', 'verified'])->prefix('user')->group(function () {
     // Dashboard (Profil)
     Route::get('/dashboard', function () {
@@ -163,9 +174,7 @@ Route::get('/contact', function () {
     })->name('user.dashboard');
 
     // Riwayat Pesanan
-    Route::get('/orders', function () {
-        return Inertia::render('User/Order');
-    })->name('user.order');
+    Route::get('/orders', [\App\Http\Controllers\OrderController::class, 'index'])->name('user.order');
 
     // Halaman Status Order
     Route::get('/status-order', function () {
