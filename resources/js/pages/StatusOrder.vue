@@ -67,10 +67,6 @@ const daysLeft = computed(() => {
         </p>
 
       </div>
-
-      <button class="mt-10 bg-black text-white px-6 py-3 rounded hover:bg-gray-800 transition">
-        Batalkan Pesanan
-      </button>
     </section>
 
     <FooterLayout />

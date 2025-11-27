@@ -27,15 +27,9 @@ Route::get('/admin/dashboard', function () {
 use App\Models\KategoriProduct;
 use App\Http\Controllers\Admin\ProductController;
 
-Route::get('/admin/products', function () {
-    $products = Product::with(['subkategori.kategori'])->latest()->get();
-    $categories = KategoriProduct::with('subkategories')->get();
-
-    return Inertia::render('Products', [
-        'products' => $products,
-        'categories' => $categories,
-    ]);
-})->middleware(['auth', 'verified', 'admin'])->name('admin.products');
+Route::get('/admin/products', [ProductController::class, 'index'])
+    ->middleware(['auth', 'verified', 'admin'])
+    ->name('admin.products');
 
 // Admin users (verification list) — static placeholder page
 Route::get('/admin/users', function () {
@@ -70,6 +64,11 @@ Route::delete('/admin/products/{product}', [ProductController::class, 'destroy']
     
     Route::delete('/admin/orders/{order}', [\App\Http\Controllers\Admin\AdminOrderController::class, 'destroy'])
         ->middleware(['auth', 'verified', 'admin'])->name('admin.orders.destroy');
+
+    Route::patch('/admin/orders/{order}/reject', [\App\Http\Controllers\Admin\AdminOrderController::class, 'reject'])
+    ->middleware(['auth', 'verified', 'admin'])
+    ->name('admin.orders.reject');
+
 
 // Halaman Shop (user)
 Route::get('/shop/{category}', [ShopController::class, 'index'])

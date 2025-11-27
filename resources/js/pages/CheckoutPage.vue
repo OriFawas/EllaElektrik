@@ -12,6 +12,8 @@ const error = ref(null)
 const cart = ref({ items: [], subtotal: 0, item_count: 0 })
 
 const serviceFee = ref(2000)
+const showConfirm = ref(false)
+
 
 const fetchCart = async () => {
   loading.value = true
@@ -135,7 +137,7 @@ onMounted(fetchCart)
 
         <!-- Tombol Pesan -->
         <button
-          @click="createOrder"
+          @click="showConfirm = true"
           :disabled="!codChecked || loading || cart.items.length === 0"
           :class="codChecked && cart.items.length > 0 ? 'bg-black hover:bg-gray-800' : 'bg-gray-400 cursor-not-allowed'"
           class="mt-8 w-full py-3 text-center text-white font-semibold block"
@@ -145,6 +147,36 @@ onMounted(fetchCart)
 
       </div>
     </div>
+
+<!-- Modal -->
+<div
+  v-if="showConfirm"
+  class="fixed inset-0 bg-black/40 flex items-center justify-center z-50"
+>
+  <div class="bg-white w-80 p-6 rounded-lg shadow-lg text-center">
+    <h3 class="text-lg font-semibold mb-4">Konfirmasi Pesanan</h3>
+    <p class="text-sm text-gray-600 mb-6">
+      Yakin untuk melanjutkan pemesanan?
+    </p>
+
+    <div class="flex gap-4">
+      <button
+        class="flex-1 py-2 bg-gray-300 rounded"
+        @click="showConfirm = false"
+      >
+        Batal
+      </button>
+
+      <button
+        class="flex-1 py-2 bg-black text-white rounded"
+        @click="() => { showConfirm = false; createOrder(); }"
+      >
+        Ya, Lanjutkan
+      </button>
+    </div>
+  </div>
+</div>
+
 
     <FooterLayout />
   </div>

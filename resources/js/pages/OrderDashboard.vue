@@ -2,11 +2,11 @@
   <AdminLayout>
     <Head title="Admin Pesanan - Ella Elektrik" />
 
-    <main class="p-6 bg-gray-100 min-h-screen text-gray-900">
-      <div class="max-w-7xl mx-auto space-y-12">
+    <main class="pl-0 pr-6 pt-6 pb-6 bg-gray-100 min-h-screen text-gray-900">
+      <div class="max-w-7xl mx-auto space-y-6">
 
         <!-- 🟦 Pesanan User -->
-        <section>
+        <section class="-mt-5">
           <h2 class="text-2xl font-bold mb-4">Pesanan User</h2>
           <div v-if="filteredPesananUser.length" class="space-y-4">
             <div
@@ -16,7 +16,6 @@
             >
               <div class="flex items-center w-full justify-between">
                 <div class="flex items-center gap-6">
-                  <img src="/images/user-avatar.png" class="h-10 w-10 rounded-full" />
                   <div class="flex flex-col">
                     <span class="font-medium">{{ order.nama }}</span>
                     <span class="text-gray-500 text-sm">NIK: {{ order.nik }}</span>
@@ -63,7 +62,6 @@
             >
               <div class="flex items-center w-full justify-between">
                 <div class="flex items-center gap-6">
-                  <img src="/images/user-avatar.png" class="h-10 w-10 rounded-full" />
                   <div class="flex flex-col">
                     <span class="font-medium">{{ order.nama }}</span>
                     <span class="text-gray-500 text-sm">NIK: {{ order.nik }}</span>

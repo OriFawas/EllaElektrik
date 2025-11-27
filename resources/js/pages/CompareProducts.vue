@@ -1,6 +1,6 @@
 <script setup>
 import { Head } from '@inertiajs/vue3'
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import HeaderLayout from '../components/HeaderLayout.vue'
 import FooterLayout from '@/components/FooterLayout.vue'
 
@@ -51,6 +51,28 @@ const formatPrice = (value) => {
   if (value == null) return '-'
   try { return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(Number(value)) } catch { return value }
 }
+
+onMounted(() => {
+  const params = new URLSearchParams(window.location.search)
+  const productId = params.get('product')
+
+  if (!productId) return
+
+  // Jika slot kiri kosong → isi kiri
+  if (!selectedLeft.value) {
+    selectedLeft.value = productId
+    return
+  }
+
+  // Slot kiri sudah terisi → isi slot kanan
+  if (!selectedRight.value) {
+    selectedRight.value = productId
+    return
+  }
+
+  // Kalau dua-duanya sudah terisi, biarkan saja (atau bisa dibuat override)
+})
+
 </script>
 
 <template>

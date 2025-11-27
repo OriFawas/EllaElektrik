@@ -54,9 +54,24 @@ class OrderController extends Controller
                 'image' => $order->items->first()->product->image_url ?? '/images/products/default.jpg',
             ]);
 
+         $rejectedOrders = Order::with('items.product')
+        ->where('user_id', $user->id)
+        ->where('status', 'cancelled')
+        ->orderBy('updated_at', 'desc')
+        ->get()
+        ->map(fn($order) => [
+            'id' => $order->id,
+            'name' => $order->items->pluck('name_snapshot')->join(', '),
+            'price' => 'Rp ' . number_format($order->total, 0, ',', '.'),
+            'date' => $order->updated_at->format('d F Y'),
+            'image' => $order->items->first()->product->image_url ?? '/images/products/default.jpg',
+            'reason' => $order->reject_reason ?? 'Pesanan ditolak oleh admin',
+        ]);
+
         return Inertia::render('User/Order', [
             'activeOrders' => $activeOrders,
             'historyOrders' => $historyOrders,
+            'rejectedOrders' => $rejectedOrders,
         ]);
     }
 
@@ -89,6 +104,18 @@ class OrderController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $user = Auth::user();
+        // ✅ 1. Cek apakah user sudah upload KTP
+        if (!$user->ktp_path) {
+            return redirect()->route('user.dashboard')
+                ->withErrors(['order' => 'Anda harus upload KTP dan menunggu verifikasi admin sebelum membuat pesanan.']);
+        }
+
+        // ✅ 2. Cek apakah user sudah diverifikasi admin
+        if ($user->verification_status !== 'verified') {
+            return redirect()->route('user.dashboard')
+                ->withErrors(['order' => 'Akun Anda belum diverifikasi admin. Tunggu persetujuan admin.']);
+        }
+
         $cart = $this->cartService->getActiveCart($user);
         $cart->load('items.product');
 

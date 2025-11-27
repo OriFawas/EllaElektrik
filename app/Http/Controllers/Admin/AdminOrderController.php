@@ -31,8 +31,8 @@ class AdminOrderController extends Controller
             ]);
 
         $riwayat = Order::with(['user', 'items'])
-            ->completed()
-            ->orderBy('completed_at', 'desc')
+            ->whereIn('status', ['completed', 'cancelled'])
+            ->orderBy('updated_at', 'desc')
             ->get()
             ->map(fn($order) => [
                 'id' => $order->id,
@@ -41,7 +41,10 @@ class AdminOrderController extends Controller
                 'products' => $order->items->pluck('name_snapshot')->join(', '),
                 'totalPrice' => $order->total,
                 'createdAt' => $order->completed_at ? $order->completed_at->format('Y-m-d') : $order->created_at->format('Y-m-d'),
-                'status' => $order->status === 'completed' ? 'Selesai' : 'Ditolak',
+                'status' => match ($order->status) {
+            'completed' => 'Selesai',
+            'cancelled' => 'Ditolak',
+        }
             ]);
 
         return Inertia::render('OrderDashboard', [
@@ -72,4 +75,15 @@ class AdminOrderController extends Controller
 
         return redirect()->back()->with('success', 'Pesanan berhasil dibatalkan.');
     }
+
+    public function reject(Order $order, Request $request): RedirectResponse
+{
+    $order->update([
+        'status' => 'cancelled',
+        'completed_at' => null,
+    ]);
+
+    return redirect()->back()->with('success', 'Pesanan berhasil ditolak.');
+}
+
 }

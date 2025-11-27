@@ -24,7 +24,6 @@
           :key="product.id ?? index"
           class="hover:bg-gray-50 transition"
         >
-          <!-- Product name & image -->
           <td class="px-4 py-3 flex items-center gap-3">
             <input type="checkbox" class="rounded border-gray-300" />
             <img
@@ -38,7 +37,6 @@
             </div>
           </td>
 
-          <!-- Category -->
           <td class="px-4 py-3 text-sm text-gray-700">
             {{
               product.subkategori_product?.name ||
@@ -48,7 +46,6 @@
             }}
           </td>
 
-          <!-- Stock -->
           <td class="px-4 py-3 text-sm">
             <span
               v-if="product.stock <= 0"
@@ -61,12 +58,10 @@
             <span v-else>{{ product.stock }}</span>
           </td>
 
-          <!-- Price -->
           <td class="px-4 py-3 text-sm font-semibold text-gray-800">
             {{ formatCurrency(product.price) }}
           </td>
 
-          <!-- Status -->
           <td class="px-4 py-3">
             <span
               :class="[
@@ -80,7 +75,6 @@
             </span>
           </td>
 
-          <!-- Actions -->
           <td class="px-4 py-3 text-right">
             <div class="flex justify-end gap-2">
               <button
@@ -97,8 +91,6 @@
               >
                 <i class="ri-delete-bin-line"></i>
               </button>
-
-              <!-- Ellipsis button to open full product modal (view/edit/remove) -->
               <button
                 class="p-1 text-gray-500 hover:text-gray-700"
                 title="More"
@@ -110,7 +102,6 @@
           </td>
         </tr>
 
-        <!-- Empty state -->
         <tr v-if="!products || products.length === 0">
           <td colspan="6" class="px-4 py-8 text-center text-gray-500 text-sm">
             No products found.
@@ -121,26 +112,55 @@
 
     <!-- Footer / Pagination -->
     <div class="p-4 border-t flex items-center justify-between text-sm text-gray-600">
-      <span>Result 1–10 of {{ products.length || 0 }}</span>
+      <span>
+        Showing {{ pagination.from }}–{{ pagination.to }} of {{ pagination.total }}
+      </span>
+
       <div class="flex items-center gap-1">
-        <button class="px-2 py-1 border rounded text-gray-600 hover:bg-gray-50">Prev</button>
-        <button class="px-2 py-1 border rounded bg-indigo-600 text-white">1</button>
-        <button class="px-2 py-1 border rounded text-gray-600 hover:bg-gray-50">Next</button>
+        <button
+          v-for="(link, i) in pagination.links"
+          :key="i"
+          :disabled="!link.url"
+          @click="changePage(link.url)"
+          class="px-3 py-1 border rounded text-sm"
+          :class="[
+            link.active ? 'bg-indigo-600 text-white' : 'hover:bg-gray-100',
+            !link.url ? 'opacity-50 cursor-not-allowed' : ''
+          ]"
+        >
+          {{ formatLabel(link.label) }}
+        </button>
       </div>
     </div>
+
   </div>
 </template>
 
 <script setup>
+import { router } from '@inertiajs/vue3';
+
 const props = defineProps({
-  products: {
-    type: Array,
-    default: () => [],
-  },
+  products: { type: Array, default: () => [] },
+  pagination: { type: Object, default: () => ({}) }
 });
 
 const products = props.products;
 const placeholder = 'https://via.placeholder.com/40?text=Img';
+
+function changePage(url) {
+  if (!url) return;
+  router.visit(url, {
+    preserveScroll: true,
+    preserveState: true,
+  });
+}
+
+function formatLabel(label) {
+  return label
+    .replace(/&laquo;/g, '«')
+    .replace(/&raquo;/g, '»')
+    .replace(/(<([^>]+)>)/gi, ""); // bersihkan semua HTML tag
+}
 
 function formatCurrency(value) {
   if (value === null || value === undefined) return '-';

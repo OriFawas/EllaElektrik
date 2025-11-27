@@ -10,25 +10,24 @@ use App\Models\KategoriProduct;
 class SubkategoriController extends Controller
 {
     /**
-     * Return subcategories. Optionally filter by category name or slug via ?category=...
+     * Return subcategories based on category_id
      */
     public function index(Request $request)
     {
-        $category = $request->query('category');
+        $categoryId = $request->query('category_id');
+        $categoryName = $request->query('category');
 
         $query = SubkategoriProduct::query();
 
-        if ($category) {
-            // try to find category by slug or name
-            $kategori = KategoriProduct::where('slug', $category)
-                ->orWhere('name', $category)
-                ->first();
+        if ($categoryId) {
+            $query->where('kategori_product_id', $categoryId);
+        }
 
+        // Filter by category name
+        if ($categoryName) {
+            $kategori = KategoriProduct::where('name', $categoryName)->first();
             if ($kategori) {
                 $query->where('kategori_product_id', $kategori->id);
-            } else {
-                // if category not found, return empty
-                return response()->json([]);
             }
         }
 

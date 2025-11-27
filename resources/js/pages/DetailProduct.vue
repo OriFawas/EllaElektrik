@@ -65,8 +65,8 @@
                                 <button
                                     @click="addToCart"
                                     :disabled="(product.stock ?? 0) <= 0"
-                                    :class="['flex items-center justify-center gap-2 px-6 py-3 rounded-md transition',
-                                             (product.stock ?? 0) <= 0 ? 'bg-gray-300 text-gray-600 cursor-not-allowed' : 'bg-black text-white hover:bg-gray-800']">
+                                    :class="['flex items-center justify-center gap-2 px-5 py-3 rounded-md transition w-fit',
+                                             (product.stock ?? 0) <= 0 ? 'bg-gray-300 text-gray-600 cursor-not-allowed' : 'bg-black text-white hover:bg-gray-800 cursor-pointer']">
                                     <i class="fas fa-cart-plus"></i>
                                     {{ (product.stock ?? 0) <= 0 ? 'Stok Habis' : 'Masukkan Keranjang' }}
                                 </button>
@@ -84,8 +84,8 @@
                             </div>
 
                             <!-- Tombol Bandingkan Produk -->
-                            <Link href="/compare-products"
-                                class="flex items-center justify-center gap-2 border bg-black text-white px-6 py-3 rounded-md hover:bg-gray-100 transition w-fit">
+                            <Link :href="`/compare-products?product=${product.id}`"
+                                class="flex items-center justify-center gap-2 px-6 py-3 rounded-md transition w-fit bg-black text-white hover:bg-gray-800">
                             <i class="fas fa-scale-balanced"></i> Bandingkan Produk
                             </Link>
                         </div>

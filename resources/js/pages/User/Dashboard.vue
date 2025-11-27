@@ -192,6 +192,7 @@ const statusMeta = computed(() => {
     <div class="bg-white p-8 rounded-lg shadow w-full ">
       <div class="flex items-center gap-3 mb-6">
         <h1 class="text-2xl font-semibold">Profil Saya</h1>
+
         <span
           :title="verificationStatus === 'rejected' && verificationNote ? verificationNote : ''"
           :class="['inline-flex items-center gap-2 px-2.5 py-1 rounded-full text-xs font-medium', statusMeta.cls]"
@@ -199,6 +200,10 @@ const statusMeta = computed(() => {
           <span :class="['h-2 w-2 rounded-full', statusMeta.dot]"></span>
           {{ statusMeta.label }}
         </span>
+
+                <div v-if="page.props.errors.order" class="mb-4 p-4 bg-red-100 text-red-700 rounded">
+  {{ page.props.errors.order }}
+</div>
 
       </div>
 

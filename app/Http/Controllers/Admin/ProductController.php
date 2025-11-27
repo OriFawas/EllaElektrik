@@ -7,12 +7,45 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use App\Models\Product;
 use Illuminate\Support\Facades\Storage;
+use App\Models\KategoriProduct;
 
 class ProductController extends Controller
 {
     /**
      * Store a newly created product.
      */
+    public function index(Request $request)
+{
+    $query = Product::with(['subkategori.kategori']);
+
+    if ($request->filled('category')) {
+        $query->whereHas('subkategori.kategori', function($q) use ($request) {
+            $q->where('id', $request->category);
+        });
+    }
+
+    if ($request->filled('subcategory')) {
+        $query->where('subkategori_product_id', $request->subcategory);
+    }
+
+    $products = $query->latest()->paginate(10)->withQueryString();
+    $categories = KategoriProduct::with('subkategories')->get();
+
+    return inertia('Products', [
+        'products' => $products,
+        'pagination' => [
+        'from' => $products->firstItem(),
+        'to' => $products->lastItem(),
+        'total' => $products->total(),
+        'links' => $products->links(),
+        'current_page' => $products->currentPage(),
+        'last_page' => $products->lastPage(),
+        ],
+        'categories' => $categories,
+        'filters' => $request->only(['category','subcategory']),
+    ]);
+}
+
     public function store(Request $request)
     {
         $data = $request->validate([
