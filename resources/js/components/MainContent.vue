@@ -14,9 +14,9 @@
         </div>
 
         <div class="ml-12">
-          <button class="border border-white px-4 py-2 rounded hover:bg-white hover:text-[#183247] transition">
+          <Link href="/shop/Elektronik-Rumah-Tangga" class="border border-white px-4 py-2 rounded hover:bg-white hover:text-[#183247] transition">
             Lihat Selengkapnya
-          </button>
+          </Link>
         </div>
       </div>
 

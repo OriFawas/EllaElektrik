@@ -1,6 +1,6 @@
 <script setup>
 import { Head } from '@inertiajs/vue3'
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import HeaderLayout from '../components/HeaderLayout.vue'
 import FooterLayout from '@/components/FooterLayout.vue'
 
@@ -17,6 +17,19 @@ const selectedRight = ref('')
 const ignoreRestriction = ref(false)
 
 const allProducts = computed(() => props.products || [])
+
+// Preselect values from URL query params if present (e.g. ?left=123&right=456)
+onMounted(() => {
+  try {
+    const params = new URLSearchParams(window.location.search)
+    const l = params.get('left')
+    const r = params.get('right')
+    if (l) selectedLeft.value = String(l)
+    if (r) selectedRight.value = String(r)
+  } catch (e) {
+    // ignore in non-browser environments
+  }
+})
 
 const leftProduct = computed(() => {
   const id = parseInt(selectedLeft.value)

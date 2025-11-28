@@ -84,7 +84,7 @@
                             </div>
 
                             <!-- Tombol Bandingkan Produk -->
-                            <Link href="/compare-products"
+                            <Link :href="`/compare-products?left=${product.id}`"
                                 class="flex items-center justify-center gap-2 border bg-black text-white px-6 py-3 rounded-md hover:bg-gray-100 transition w-fit">
                             <i class="fas fa-scale-balanced"></i> Bandingkan Produk
                             </Link>
