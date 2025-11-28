@@ -16,13 +16,13 @@ class KategoriSubkategoriSeeder extends Seeder
     {
         $map = [
             'Elektronik Rumah Tangga' => [
-                'Kipas', 'Setrika', 'Raket Nyamuk', 'Hair Dryer', 'Antena', 'STB', 'Speaker'
+                 'Kipas', 'Setrika', 'Raket Nyamuk', 'Plester', 'Bel Pintu', 'Lakban', 'Lem Tembak', 'Remote'
             ],
             'Elektronik Dapur' => [
                 'Magic Com', 'Blender', 'Mixer', 'Kompor', 'Mug Listrik'
             ],
             'Kelistrikan' => [
-                'Kabel', 'Klem Kabel', 'Tali Ties', 'Stopkontak', 'Saklar', 'Kalkulator', 'Baterai', 'Lampu', 'Lampu Tidur', 'Senter'
+                'Kabel', 'Klem Kabel', 'Tali Ties', 'Stopkontak', 'Saklar', 'Kalkulator', 'Baterai', 'Lampu', 'Box MCB', 'Senter'
             ],
         ];
 

@@ -226,6 +226,11 @@ watch([searchQuery, categoryFilter, subcategoryFilter, statusFilter, stockFilter
   page.value = 1;
 });
 
+// Clear subcategory when category changes
+watch(categoryFilter, () => {
+  subcategoryFilter.value = '';
+});
+
 // Categories derived from relationship: subkategori.kategori.name
 const categories = computed(() => {
   const names = new Set();
@@ -236,13 +241,26 @@ const categories = computed(() => {
   return Array.from(names).sort((a, b) => a.localeCompare(b));
 });
 
-// Subcategories: always show all unique subcategories
+// Subcategories: filter by selected category
 const subcategories = computed(() => {
   const names = new Set();
+  const normalize = (s) => (s ? String(s).trim().toLowerCase() : '');
+  
   products.forEach((p) => {
-    const name = p.subkategori?.name;
-    if (name) names.add(String(name));
+    const catName = p.subkategori?.kategori?.name;
+    const subName = p.subkategori?.name;
+    
+    // If category is selected, only include subcategories from that category
+    if (categoryFilter.value) {
+      if (normalize(catName) === normalize(categoryFilter.value) && subName) {
+        names.add(String(subName));
+      }
+    } else {
+      // If no category selected, show all subcategories
+      if (subName) names.add(String(subName));
+    }
   });
+  
   return Array.from(names).sort((a, b) => a.localeCompare(b));
 });
 
