@@ -7,6 +7,44 @@
       </button>
     </div>
 
+    <!-- Filters -->
+    <div class="p-4 border-b flex flex-wrap gap-2 items-center">
+      <div class="flex items-center gap-2">
+        <input
+          v-model.trim="searchQuery"
+          type="text"
+          placeholder="Search name, brand, slug..."
+          class="w-64 px-3 py-2 border rounded-lg text-sm"
+        />
+        <select v-model="categoryFilter" class="px-3 py-2 border rounded-lg text-sm">
+          <option value="">All Categories</option>
+          <option v-for="c in categories" :key="c" :value="c">{{ c }}</option>
+        </select>
+        <select v-model="subcategoryFilter" class="px-3 py-2 border rounded-lg text-sm">
+          <option value="">All Subcategories</option>
+          <option v-for="sc in subcategories" :key="sc" :value="sc">{{ sc }}</option>
+        </select>
+        <select v-model="statusFilter" class="px-3 py-2 border rounded-lg text-sm">
+          <option value="">All Status</option>
+          <option value="active">Published</option>
+          <option value="inactive">Inactive</option>
+        </select>
+        <select v-model="stockFilter" class="px-3 py-2 border rounded-lg text-sm">
+          <option value="">All Stock</option>
+          <option value="out">Out of Stock</option>
+          <option value="low">Low (≤10)</option>
+        </select>
+      </div>
+      <div class="ml-auto flex items-center gap-2">
+        <label class="text-sm text-gray-600">Per page</label>
+        <select v-model.number="perPage" class="px-3 py-2 border rounded-lg text-sm">
+          <option :value="5">5</option>
+          <option :value="10">10</option>
+          <option :value="20">20</option>
+        </select>
+      </div>
+    </div>
+
     <table class="min-w-full divide-y divide-gray-100">
       <thead class="bg-gray-50">
         <tr>
@@ -20,7 +58,7 @@
       </thead>
       <tbody class="divide-y divide-gray-100 bg-white">
         <tr
-          v-for="(product, index) in products"
+          v-for="(product, index) in paginatedProducts"
           :key="product.id ?? index"
           class="hover:bg-gray-50 transition"
         >
@@ -41,9 +79,7 @@
           <!-- Category -->
           <td class="px-4 py-3 text-sm text-gray-700">
             {{
-              product.subkategori_product?.name ||
               product.subkategori?.name ||
-              product.category ||
               '-'
             }}
           </td>
@@ -111,7 +147,7 @@
         </tr>
 
         <!-- Empty state -->
-        <tr v-if="!products || products.length === 0">
+        <tr v-if="filteredProducts.length === 0">
           <td colspan="6" class="px-4 py-8 text-center text-gray-500 text-sm">
             No products found.
           </td>
@@ -121,11 +157,29 @@
 
     <!-- Footer / Pagination -->
     <div class="p-4 border-t flex items-center justify-between text-sm text-gray-600">
-      <span>Result 1–10 of {{ products.length || 0 }}</span>
+      <span>
+        Showing
+        {{ startIndex + 1 }}–{{ Math.min(endIndex, filteredProducts.length) }}
+        of {{ filteredProducts.length }}
+      </span>
       <div class="flex items-center gap-1">
-        <button class="px-2 py-1 border rounded text-gray-600 hover:bg-gray-50">Prev</button>
-        <button class="px-2 py-1 border rounded bg-indigo-600 text-white">1</button>
-        <button class="px-2 py-1 border rounded text-gray-600 hover:bg-gray-50">Next</button>
+        <button
+          class="px-2 py-1 border rounded text-gray-600 hover:bg-gray-50"
+          :disabled="page <= 1"
+          @click="goPrev"
+        >Prev</button>
+        <button
+          v-for="p in totalPages"
+          :key="p"
+          class="px-2 py-1 border rounded"
+          :class="p === page ? 'bg-indigo-600 text-white' : 'text-gray-600 hover:bg-gray-50'"
+          @click="goTo(p)"
+        >{{ p }}</button>
+        <button
+          class="px-2 py-1 border rounded text-gray-600 hover:bg-gray-50"
+          :disabled="page >= totalPages"
+          @click="goNext"
+        >Next</button>
       </div>
     </div>
   </div>
@@ -153,5 +207,88 @@ function formatCurrency(value) {
   } catch {
     return `${value}`;
   }
+}
+
+// Filters & pagination state
+import { computed, ref, watch } from 'vue';
+
+const searchQuery = ref('');
+const categoryFilter = ref('');
+const subcategoryFilter = ref('');
+const statusFilter = ref(''); // '', 'active', 'inactive'
+const stockFilter = ref(''); // '', 'out', 'low'
+
+const page = ref(1);
+const perPage = ref(10);
+
+// Reset to first page when filters change
+watch([searchQuery, categoryFilter, subcategoryFilter, statusFilter, stockFilter, perPage], () => {
+  page.value = 1;
+});
+
+// Categories derived from relationship: subkategori.kategori.name
+const categories = computed(() => {
+  const names = new Set();
+  products.forEach((p) => {
+    const name = p.subkategori?.kategori?.name;
+    if (name) names.add(String(name));
+  });
+  return Array.from(names).sort((a, b) => a.localeCompare(b));
+});
+
+// Subcategories: always show all unique subcategories
+const subcategories = computed(() => {
+  const names = new Set();
+  products.forEach((p) => {
+    const name = p.subkategori?.name;
+    if (name) names.add(String(name));
+  });
+  return Array.from(names).sort((a, b) => a.localeCompare(b));
+});
+
+const filteredProducts = computed(() => {
+  const q = searchQuery.value.toLowerCase();
+  return products.filter((p) => {
+    const matchesSearch = !q
+      || [p.name, p.slug, p.brand]
+        .filter(Boolean)
+        .some((v) => String(v).toLowerCase().includes(q));
+
+    const catName = p.subkategori?.kategori?.name;
+    const subcatName = p.subkategori?.name;
+
+    // Normalize for safer comparison
+    const normalize = (s) => (s ? String(s).trim().toLowerCase() : '');
+    const matchesCategory =
+      !categoryFilter.value || normalize(categoryFilter.value) === normalize(catName);
+    const matchesSubcategory = !subcategoryFilter.value || normalize(subcategoryFilter.value) === normalize(subcatName);
+
+    const matchesStatus =
+      !statusFilter.value ||
+      (statusFilter.value === 'active' && p.is_active) ||
+      (statusFilter.value === 'inactive' && !p.is_active);
+
+    const matchesStock =
+      !stockFilter.value ||
+      (stockFilter.value === 'out' && Number(p.stock) <= 0) ||
+      (stockFilter.value === 'low' && Number(p.stock) > 0 && Number(p.stock) <= 10);
+
+    return matchesSearch && matchesCategory && matchesSubcategory && matchesStatus && matchesStock;
+  });
+});
+
+const totalPages = computed(() => Math.max(1, Math.ceil(filteredProducts.value.length / perPage.value)));
+const startIndex = computed(() => (page.value - 1) * perPage.value);
+const endIndex = computed(() => page.value * perPage.value);
+const paginatedProducts = computed(() => filteredProducts.value.slice(startIndex.value, endIndex.value));
+
+function goPrev() {
+  if (page.value > 1) page.value -= 1;
+}
+function goNext() {
+  if (page.value < totalPages.value) page.value += 1;
+}
+function goTo(p) {
+  page.value = p;
 }
 </script>
