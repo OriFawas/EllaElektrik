@@ -47,6 +47,12 @@ const createOrder = () => {
   })
 }
 
+// Confirmation modal state
+const showConfirm = ref(false)
+const openConfirm = () => { if (!loading.value) showConfirm.value = true }
+const closeConfirm = () => { showConfirm.value = false }
+const confirmAndOrder = () => { closeConfirm(); createOrder() }
+
 const removeItem = async (id) => {
   try {
     const res = await fetch(`/api/cart/items/${id}`, {
@@ -135,13 +141,38 @@ onMounted(fetchCart)
 
         <!-- Tombol Pesan -->
         <button
-          @click="createOrder"
+          @click="openConfirm"
           :disabled="!codChecked || loading || cart.items.length === 0"
           :class="codChecked && cart.items.length > 0 ? 'bg-black hover:bg-gray-800' : 'bg-gray-400 cursor-not-allowed'"
           class="mt-8 w-full py-3 text-center text-white font-semibold block"
         >
           {{ loading ? 'Memproses...' : 'Pesan Sekarang' }}
         </button>
+
+        <!-- Konfirmasi Pesanan Modal -->
+        <div v-if="showConfirm" class="fixed inset-0 z-50 flex items-center justify-center">
+          <!-- Backdrop -->
+          <div class="absolute inset-0 bg-black/40" @click="closeConfirm"></div>
+          <!-- Dialog -->
+          <div class="relative bg-white rounded-lg shadow-xl w-[90%] max-w-sm p-6">
+            <h3 class="text-lg font-semibold mb-2 text-center">Konfirmasi Pesanan</h3>
+            <p class="text-gray-600 text-center mb-6">Yakin untuk melanjutkan pemesanan?</p>
+            <div class="flex items-center justify-center gap-3">
+              <button
+                class="px-4 py-2 rounded bg-gray-200 text-gray-800 hover:bg-gray-300"
+                @click="closeConfirm"
+              >
+                Batal
+              </button>
+              <button
+                class="px-4 py-2 rounded bg-black text-white hover:bg-gray-800"
+                @click="confirmAndOrder"
+              >
+                Ya, Lanjutkan
+              </button>
+            </div>
+          </div>
+        </div>
 
       </div>
     </div>

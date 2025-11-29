@@ -190,6 +190,13 @@ const statusMeta = computed(() => {
   <UserLayout>
     <!-- Container full width -->
     <div class="bg-white p-8 rounded-lg shadow w-full ">
+      <!-- Verification required notice (only shown when redirected from order attempt) -->
+      <div v-if="page.props?.errors?.verification" class="mb-4">
+        <div class="flex items-start gap-3 bg-red-100 text-red-700 px-4 py-3 rounded">
+          <span class="inline-flex items-center justify-center h-2.5 w-2.5 mt-1 rounded-full bg-red-500"></span>
+          <p class="text-sm">{{ page.props.errors.verification }}</p>
+        </div>
+      </div>
       <div class="flex items-center gap-3 mb-6">
         <h1 class="text-2xl font-semibold">Profil Saya</h1>
         <span
