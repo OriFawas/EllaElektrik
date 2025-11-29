@@ -6,7 +6,8 @@ import FooterLayout from '@/components/FooterLayout.vue'
 
 const props = defineProps({
   activeOrders: Array,
-  historyOrders: Array
+  historyOrders: Array,
+  rejectedOrders: Array,
 })
 </script>
 
@@ -83,6 +84,43 @@ const props = defineProps({
 
           <div v-else class="text-center text-gray-500 py-10">
             Belum ada riwayat pesanan.
+          </div>
+        </div>
+
+        <!-- Bagian 3: Pesanan Ditolak -->
+        <div>
+          <h1 class="text-2xl font-semibold mb-6">Pesanan Ditolak</h1>
+
+          <div v-if="props.rejectedOrders && props.rejectedOrders.length" class="space-y-4">
+            <div
+              v-for="order in props.rejectedOrders"
+              :key="order.id"
+              class="flex items-center justify-between border-b pb-4 bg-red-50 rounded-md px-4 py-3"
+            >
+              <div class="flex items-center space-x-4">
+                <img
+                  :src="order.image"
+                  alt="Produk"
+                  class="w-20 h-20 object-cover rounded-md ring-2 ring-red-200"
+                />
+                <div>
+                  <p class="text-lg font-medium">{{ order.name }}</p>
+                  <p class="text-gray-600 text-sm">{{ order.date }}</p>
+                  <span class="inline-flex items-center gap-2 mt-2 px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-700">
+                    <i class="fas fa-ban"></i> {{ order.status }}
+                  </span>
+                </div>
+              </div>
+
+              <div class="text-right">
+                <p class="text-gray-800 font-semibold">{{ order.price }}</p>
+                <p v-if="order.reason" class="text-xs text-red-600 mt-1">Alasan: {{ order.reason }}</p>
+              </div>
+            </div>
+          </div>
+
+          <div v-else class="text-center text-gray-500 py-10">
+            Tidak ada pesanan ditolak.
           </div>
         </div>
 

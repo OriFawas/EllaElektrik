@@ -41,9 +41,10 @@ class OrderController extends Controller
                 'days_left' => $order->days_left,
             ]);
 
+        // Completed orders
         $historyOrders = Order::with('items.product')
             ->where('user_id', $user->id)
-            ->completed()
+            ->where('status', 'completed')
             ->orderBy('completed_at', 'desc')
             ->get()
             ->map(fn($order) => [
@@ -52,11 +53,29 @@ class OrderController extends Controller
                 'price' => 'Rp ' . number_format($order->total, 0, ',', '.'),
                 'date' => $order->completed_at ? $order->completed_at->format('d F Y') : $order->created_at->format('d F Y'),
                 'image' => $order->items->first()->product->image_url ?? '/images/products/default.jpg',
+                'status' => 'Selesai',
+            ]);
+
+        // Rejected/cancelled orders
+        $rejectedOrders = Order::with('items.product')
+            ->where('user_id', $user->id)
+            ->where('status', 'cancelled')
+            ->orderBy('created_at', 'desc')
+            ->get()
+            ->map(fn($order) => [
+                'id' => $order->id,
+                'name' => $order->items->pluck('name_snapshot')->join(', '),
+                'price' => 'Rp ' . number_format($order->total, 0, ',', '.'),
+                'date' => $order->created_at->format('d F Y'),
+                'image' => $order->items->first()->product->image_url ?? '/images/products/default.jpg',
+                'status' => 'Ditolak',
+                'reason' => $order->cancel_reason ?? null,
             ]);
 
         return Inertia::render('User/Order', [
             'activeOrders' => $activeOrders,
             'historyOrders' => $historyOrders,
+            'rejectedOrders' => $rejectedOrders,
         ]);
     }
 
@@ -70,6 +89,17 @@ class OrderController extends Controller
             return redirect()->route('home');
         }
 
+        // Map internal statuses to frontend tokens:
+        // - 'ST1' = ready for pickup (user can pick up)
+        // - 'ST2' = completed (order finished)
+        // - 'ST3' = cancelled/rejected (order was rejected)
+        $statusToken = 'ST2';
+        if ($order->status === 'ready_for_pickup') {
+            $statusToken = 'ST1';
+        } elseif ($order->status === 'cancelled') {
+            $statusToken = 'ST3';
+        }
+
         return Inertia::render('StatusOrder', [
             'order' => [
                 'id' => 'ORD-' . str_pad($order->id, 6, '0', STR_PAD_LEFT),
@@ -77,7 +107,7 @@ class OrderController extends Controller
                 'subtotal' => $order->subtotal,
                 'biayaLayanan' => $order->service_fee,
                 'total' => $order->total,
-                'status' => $order->status === 'ready_for_pickup' ? 'ST1' : 'ST2',
+                'status' => $statusToken,
                 'days_left' => $order->days_left,
             ],
         ]);
@@ -89,6 +119,16 @@ class OrderController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $user = Auth::user();
+        // Require account verification before placing orders
+        if (!$user) {
+            return redirect()->route('login');
+        }
+        $isEmailVerified = !is_null($user->email_verified_at);
+        $isProfileVerified = ($user->verification_status ?? null) === 'approved' || !is_null($user->verified_at);
+        if (!$isEmailVerified || !$isProfileVerified) {
+            return redirect()->route('user.dashboard')
+                ->withErrors(['verification' => 'Akun Anda belum terverifikasi. Mohon selesaikan verifikasi sebelum melakukan pesanan.']);
+        }
         $cart = $this->cartService->getActiveCart($user);
         $cart->load('items.product');
 
