@@ -127,7 +127,8 @@ const noticeData = computed(() => {
                   <p class="text-lg font-medium">{{ order.name }}</p>
                   <p class="text-gray-600 text-sm">{{ order.date }}</p>
                   <span class="inline-flex items-center gap-2 mt-2 px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-700">
-                    <i class="fas fa-ban"></i> {{ order.status }}
+                    <i class="fas fa-ban"></i> 
+                     Ditolak <span class="opacity-70">{{ order.status }}</span>
                   </span>
                 </div>
               </div>
