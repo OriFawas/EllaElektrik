@@ -11,7 +11,80 @@
 
         <!-- Menu -->
         <nav class="flex items-center space-x-8 text-base">
-          <Link href="#" class="hover:text-gray-300 transition">Kategori</Link>
+          <!-- Kategori dropdown -->
+          <div
+            class="relative category-dropdown"
+            @mouseenter="openCategoryDropdown"
+            @mouseleave="startCloseCategoryTimer"
+            @focusin="openCategoryDropdown"
+            @focusout="closeCategoryDropdown"
+          >
+            <button
+              class="hover:text-gray-300 transition flex items-center gap-2 font-medium"
+              @keydown.esc="closeCategoryDropdown"
+              aria-haspopup="true"
+              :aria-expanded="categoryOpen"
+            >
+              Kategori
+              <i class="fas fa-chevron-down text-sm"></i>
+            </button>
+
+            <!-- Dropdown panel -->
+            <div
+              v-if="categoryOpen"
+              class="absolute left-0 top-full mt-1 w-[62rem] bg-white text-gray-800 rounded-md shadow-xl overflow-hidden z-50"
+              role="menu"
+              @mouseenter="openCategoryDropdown"
+              @mouseleave="startCloseCategoryTimer"
+            >
+              <!-- Header -->
+              <div class="border-b border-gray-100 px-4 py-3 flex items-center justify-between">
+                <h3 class="text-lg font-semibold text-gray-900">Kategori</h3>
+              </div>
+
+              <div class="p-4 flex gap-6">
+                <!-- Left: category list (compact) -->
+                <ul class="w-1/4 max-h-[60vh] overflow-y-auto divide-y divide-gray-100 pr-2">
+                  <li
+                    v-for="cat in categories"
+                    :key="cat.id"
+                    @mouseenter="setActiveCategory(cat.id)"
+                    class="py-2 px-2 cursor-pointer"
+                  >
+                    <Link
+                      :href="`/shop/${cat.slug}`"
+                      class="flex items-center gap-2 text-sm"
+                      @focus="setActiveCategory(cat.id)">
+                      <span :class="[ 'w-1 h-5 inline-block mr-2', activeCategoryId == cat.id ? 'bg-[#183045]' : 'bg-transparent' ]" />
+                      <span :class="[ activeCategoryId == cat.id ? 'font-semibold text-[#183045]' : 'text-gray-700' ]">{{ cat.name }}</span>
+                    </Link>
+                  </li>
+                </ul>
+
+                <!-- Right: subcategories for active category (split into columns) -->
+                <div class="flex-1">
+                  <div v-if="activeCategory" class="grid grid-cols-3 gap-6">
+                    <div class="col-span-3 flex items-start justify-between">
+                      <div class="text-lg font-medium text-gray-900">{{ activeCategory.name }}</div>
+                    </div>
+
+                    <div v-for="col in splitSubcategories(activeCategory.subkategories, 3)" :key="JSON.stringify(col)">
+                      <ul class="space-y-2">
+                        <li v-for="sub in col" :key="sub.id" class="py-0">
+                          <Link
+                            :href="`/shop/${activeCategory.slug}?subcategories=${sub.id}`"
+                            class="text-sm hover:text-blue-600 block overflow-hidden truncate"
+                          >
+                            {{ sub.name }}
+                          </Link>
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </nav>
 
         <!-- Kiri: Search (Left aligned, long) -->
@@ -123,8 +196,8 @@
 </template>
 
 <script setup>
-import { Link, router } from '@inertiajs/vue3'
-import { ref, onMounted, onUnmounted } from 'vue'
+import { Link, router, usePage } from '@inertiajs/vue3'
+import { ref, onMounted, onUnmounted, computed, watch } from 'vue'
 
 const showDropdown = ref(false)
 const searchOpen = ref(false)
@@ -134,10 +207,45 @@ const searchLoading = ref(false)
 const searchError = ref(null)
 let searchTimer = null
 const cartCount = ref(0)
+const categoryOpen = ref(false)
+const categories = ref([])
+const activeCategoryId = ref(null)
 
 const toggleDropdown = () => {
   showDropdown.value = !showDropdown.value
 }
+
+let categoryCloseTimer = null
+const openCategoryDropdown = () => {
+  clearTimeout(categoryCloseTimer)
+  categoryOpen.value = true
+}
+const startCloseCategoryTimer = () => {
+  clearTimeout(categoryCloseTimer)
+  categoryCloseTimer = setTimeout(() => {
+    categoryOpen.value = false
+    activeCategoryId.value = null
+  }, 220)
+}
+const closeCategoryDropdown = () => {
+  clearTimeout(categoryCloseTimer)
+  categoryOpen.value = false
+  activeCategoryId.value = null
+}
+const setActiveCategory = (id) => { activeCategoryId.value = id }
+
+// Splits an array into N roughly equal columns for display
+const splitSubcategories = (subs = [], cols = 3) => {
+  if (!Array.isArray(subs) || subs.length === 0) return Array.from({ length: cols }, () => [])
+  const perCol = Math.ceil(subs.length / cols)
+  const groups = []
+  for (let i = 0; i < cols; i++) {
+    groups.push(subs.slice(i * perCol, i * perCol + perCol))
+  }
+  return groups
+}
+
+const activeCategory = computed(() => categories.value.find(c => String(c.id) === String(activeCategoryId.value)) || categories.value[0] || null)
 
 const openResults = () => { searchOpen.value = true }
 
@@ -170,11 +278,19 @@ const debouncedSearch = () => {
 }
 
 const handleClickOutside = (e) => {
+  // Profile dropdown: hide when clicking outside its relative container
   if (!e.target.closest('.relative')) {
     showDropdown.value = false
   }
+
   if (!e.target.closest('.header-search')) {
     searchOpen.value = false
+  }
+
+  // Category dropdown: hide when clicked outside the category dropdown block
+  if (!e.target.closest('.category-dropdown') && !e.target.closest('[aria-haspopup="true"]')) {
+    categoryOpen.value = false
+    activeCategoryId.value = null
   }
 }
 
@@ -196,6 +312,13 @@ onMounted(() => {
 
 onMounted(() => document.addEventListener('click', handleClickOutside))
 onUnmounted(() => document.removeEventListener('click', handleClickOutside))
+
+// Load categories from Inertia shared props (if available) or fallback empty
+const page = usePage()
+categories.value = page.props.categories ?? []
+watch(() => page.props.categories, (newVal) => {
+  categories.value = newVal ?? []
+})
 
 // ✅ Logout fix — gunakan path langsung dan redirect manual
 const logout = () => {

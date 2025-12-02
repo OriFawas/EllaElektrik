@@ -5,6 +5,7 @@ namespace App\Http\Middleware;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
+use App\Models\KategoriProduct;
 
 class HandleInertiaRequests extends Middleware
 {
@@ -70,6 +71,15 @@ class HandleInertiaRequests extends Middleware
             'error' => fn () => $request->session()->get('error'),
         ],
         'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
+        // Categories for header dropdown — include subcategories
+        'categories' => fn () => KategoriProduct::with(['subkategories' => function ($q) { $q->select('id', 'name', 'slug', 'kategori_product_id')->orderBy('name'); }])->select('id', 'name', 'slug')->orderBy('name')->get()->map(function ($c) {
+            return [
+                'id' => $c->id,
+                'name' => $c->name,
+                'slug' => $c->slug,
+                'subkategories' => $c->subkategories->map(function ($s) { return ['id' => $s->id, 'name' => $s->name, 'slug' => $s->slug]; }),
+            ];
+        }),
     ];
 }
 }

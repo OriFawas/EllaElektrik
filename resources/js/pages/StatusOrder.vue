@@ -1,10 +1,24 @@
 <script setup>
 import HeaderLayout from '@/components/HeaderLayout.vue'
 import FooterLayout from '@/components/FooterLayout.vue'
+import InlineNotice from '@/components/InlineNotice.vue'
 import { computed } from 'vue'
+import { usePage } from '@inertiajs/vue3'
 
+const page = usePage()
 const props = defineProps({
   order: Object
+})
+
+const flashSuccess = computed(() => page.props.flash?.success ?? null)
+const flashError = computed(() => page.props.flash?.error ?? null)
+const queryNotice = computed(() => { try { return new URL(window.location.href).searchParams.get('notice') } catch (e) { return null } })
+
+const noticeData = computed(() => {
+  if (flashSuccess.value) return { title: 'Berhasil', text: flashSuccess.value, type: 'success', cls: 'bg-green-50 text-green-700' }
+  if (flashError.value) return { title: 'Gagal', text: flashError.value, type: 'error', cls: 'bg-red-50 text-red-700' }
+  if (queryNotice.value === 'order_success') return { title: 'Pesanan Berhasil', text: 'Pesanan Anda berhasil dibuat.', type: 'success', cls: 'bg-green-50 text-green-700' }
+  return null
 })
 
 // Use days_left from backend
@@ -19,6 +33,9 @@ const daysLeft = computed(() => {
     <HeaderLayout />
 
     <section class="container mx-auto text-center py-16 px-6">
+      <div class="flex justify-center mb-6">
+        <InlineNotice v-if="noticeData" :notice="noticeData" @dismiss="() => {}" />
+      </div>
       <h2 class="text-2xl font-semibold mb-6">Informasi Pemesanan</h2>
 
       <p>ID. Order : {{ props.order.id }}</p>
@@ -67,10 +84,6 @@ const daysLeft = computed(() => {
         </p>
 
       </div>
-
-      <button class="mt-10 bg-black text-white px-6 py-3 rounded hover:bg-gray-800 transition">
-        Batalkan Pesanan
-      </button>
     </section>
 
     <FooterLayout />

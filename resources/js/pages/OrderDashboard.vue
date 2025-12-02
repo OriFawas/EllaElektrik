@@ -16,7 +16,7 @@
             >
               <div class="flex items-center w-full justify-between">
                 <div class="flex items-center gap-6">
-                  <img src="/images/user-avatar.png" class="h-10 w-10 rounded-full" />
+                  
                   <div class="flex flex-col">
                     <span class="font-medium">{{ order.nama }}</span>
                     <span class="text-gray-500 text-sm">NIK: {{ order.nik }}</span>
@@ -63,7 +63,7 @@
             >
               <div class="flex items-center w-full justify-between">
                 <div class="flex items-center gap-6">
-                  <img src="/images/user-avatar.png" class="h-10 w-10 rounded-full" />
+                  
                   <div class="flex flex-col">
                     <span class="font-medium">{{ order.nama }}</span>
                     <span class="text-gray-500 text-sm">NIK: {{ order.nik }}</span>

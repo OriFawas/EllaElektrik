@@ -1,5 +1,7 @@
 <script setup>
-import { Head, Link } from '@inertiajs/vue3'
+import { Head, Link, usePage, router } from '@inertiajs/vue3'
+import { computed } from 'vue'
+import InlineNotice from '@/components/InlineNotice.vue'
 import UserLayout from '@/layouts/UserLayout.vue'
 import HeaderLayout from '@/components/HeaderLayout.vue'
 import FooterLayout from '@/components/FooterLayout.vue'
@@ -8,6 +10,18 @@ const props = defineProps({
   activeOrders: Array,
   historyOrders: Array,
   rejectedOrders: Array,
+})
+
+const page = usePage()
+const flashSuccess = computed(() => page.props.flash?.success ?? null)
+const flashError = computed(() => page.props.flash?.error ?? null)
+const queryNotice = computed(() => { try { return new URL(window.location.href).searchParams.get('notice') } catch (e) { return null } })
+
+const noticeData = computed(() => {
+  if (flashSuccess.value) return { title: 'Berhasil', text: flashSuccess.value, type: 'success', cls: 'bg-green-50 text-green-700' }
+  if (flashError.value) return { title: 'Gagal', text: flashError.value, type: 'error', cls: 'bg-red-50 text-red-700' }
+  if (queryNotice.value === 'verification_required') return { title: 'Perhatian', text: 'Unggah KTP untuk bisa melakukan pesanan.', type: 'error', cls: 'bg-red-50 text-red-700', ctaLabel: 'Unggah KTP' }
+  return null
 })
 </script>
 
@@ -18,6 +32,12 @@ const props = defineProps({
 
     <UserLayout>
       <div class="bg-white p-8 rounded-lg shadow w-full space-y-10">
+        <div class="flex items-start justify-between">
+          <div></div>
+          <div class="ml-auto">
+            <InlineNotice v-if="noticeData" :notice="noticeData" @dismiss="() => {}" @action="() => router.visit('/user/dashboard?notice=verification_required')" />
+          </div>
+        </div>
 
         <!-- Bagian 1: Pesanan Aktif -->
         <div>

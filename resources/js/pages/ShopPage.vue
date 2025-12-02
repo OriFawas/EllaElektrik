@@ -2,13 +2,16 @@
 import HeaderLayout from '../components/HeaderLayout.vue'
 import FooterLayout from '@/components/FooterLayout.vue'
 import { ref, computed, watch, onMounted } from 'vue'
-import { Link } from '@inertiajs/vue3'
+import { Link, usePage } from '@inertiajs/vue3'
 
 // kategori aktif (default)
 const selectedCategory = ref('Elektronik Rumah Tangga')
 
 // subcategories will be loaded from the backend (contain id, name)
 const subcategories = ref([])
+
+// category slug for API queries
+const selectedCategorySlug = ref('')
 
 // fallback mapping (used if backend not available)
 const subcategoriesByCategory = {
@@ -41,7 +44,7 @@ const formatPrice = (value) => {
 const fetchProducts = async () => {
   error.value = null
   // if no subcategories selected, clear products and skip
-  if (!selectedSubcategories.value || selectedSubcategories.value.length === 0) {
+  if (!selectedSubcategories.value || selectedSubcategories.value.length === 0 || !selectedCategorySlug.value) {
     products.value = []
     return
   }
@@ -49,7 +52,7 @@ const fetchProducts = async () => {
   loading.value = true
   try {
     const subQuery = encodeURIComponent(selectedSubcategories.value.join(','))
-    const catQuery = encodeURIComponent(selectedCategory.value)
+    const catQuery = encodeURIComponent(selectedCategorySlug.value || selectedCategory.value)
     const res = await fetch(`/api/products?category=${catQuery}&subcategories=${subQuery}`)
     if (!res.ok) throw new Error(`Server returned ${res.status}`)
     const data = await res.json()
@@ -87,10 +90,20 @@ const fetchSubcategories = async (kategori) => {
 
 const selectCategory = async (kategori) => {
   // change category and clear subcategory selections
-  selectedCategory.value = kategori
+  // if passing slug or name, derive slug/label from shared categories (if available)
+  const page = usePage()
+  const categories = page.props.categories ?? []
+  const catObj = categories.find(c => c.name === kategori || c.slug === kategori)
+  if (catObj) {
+    selectedCategory.value = catObj.name
+    selectedCategorySlug.value = catObj.slug
+  } else {
+    selectedCategory.value = kategori
+    selectedCategorySlug.value = kategori
+  }
   selectedSubcategories.value = []
   // load subcategories for this category
-  const subs = await fetchSubcategories(kategori)
+  const subs = await fetchSubcategories(selectedCategorySlug.value || selectedCategory.value)
   // If backend returned real subcategories, auto-select them so clicking category shows all products in that category
   if (subs && subs.length > 0) {
     selectedSubcategories.value = subs.map(s => s.id)
@@ -108,6 +121,22 @@ const toggleSubcategory = (subId) => {
   }
 }
 
+// update URL query string to reflect selected category/subcategories
+const updateUrlFromState = () => {
+  const slug = selectedCategorySlug.value || selectedCategory.value
+  const base = `/shop/${slug}`
+  const ids = (selectedSubcategories.value || []).map(String).filter(Boolean)
+  const query = ids.length > 0 ? `?subcategories=${encodeURIComponent(ids.join(','))}` : ''
+  const newUrl = `${base}${query}`
+  if (window.location.pathname + window.location.search !== newUrl) {
+    window.history.replaceState({}, '', newUrl)
+  }
+}
+
+watch([selectedCategorySlug, selectedSubcategories], () => {
+  updateUrlFromState()
+}, { deep: true })
+
 const isSubSelected = (subId) => selectedSubcategories.value.includes(subId)
 
 const resetFilter = () => {
@@ -116,7 +145,61 @@ const resetFilter = () => {
 }
 
 onMounted(async () => {
-  // initial load for default category and show all its products
+  // Attempt to initialise category and subcategory selection from URL (path + query)
+  const page = usePage()
+  const categories = page.props.categories ?? []
+
+  // parse path to get category slug (path: /shop/{categorySlug})
+  const pathParts = window.location.pathname.split('/').filter(Boolean)
+  const maybeShopSlug = (pathParts[0] === 'shop' && pathParts[1]) ? pathParts[1] : null
+
+  if (maybeShopSlug) {
+    const cat = categories.find(c => String(c.slug) === String(maybeShopSlug))
+    if (cat) {
+      selectedCategory.value = cat.name
+      selectedCategorySlug.value = cat.slug
+    } else {
+      selectedCategory.value = decodeURIComponent(maybeShopSlug)
+      selectedCategorySlug.value = maybeShopSlug
+    }
+  }
+
+  // parse subcategories query string. Two formats supported:
+  // - subcategories=1,2,3 (IDs)
+  // - sub=slug-of-subcategory (legacy from header links)
+  const urlParams = new URLSearchParams(window.location.search)
+  const subIds = urlParams.get('subcategories')
+  const subSlug = urlParams.get('sub')
+
+  if (subIds) {
+    const ids = subIds.split(',').map(s => s.trim()).filter(Boolean)
+    if (ids.length > 0) {
+      // ensure subcategories list loaded
+      await fetchSubcategories(selectedCategorySlug.value || selectedCategory.value)
+      selectedSubcategories.value = ids
+      await fetchProducts()
+      return
+    }
+  }
+
+  if (subSlug) {
+    // find subcategory id from shared categories list
+    const found = categories.flatMap(c => (c.subkategories ?? []).map(s => ({ id: s.id, slug: s.slug, catSlug: c.slug }))).find(s => String(s.slug) === String(subSlug))
+    if (found) {
+      // ensure selected category matches the found one
+      const cat = categories.find(c => String(c.slug) === String(found.catSlug))
+      if (cat) {
+        selectedCategory.value = cat.name
+        selectedCategorySlug.value = cat.slug
+      }
+      selectedSubcategories.value = [String(found.id)]
+      await fetchSubcategories(selectedCategorySlug.value || selectedCategory.value)
+      await fetchProducts()
+      return
+    }
+  }
+
+  // default behaviour if no URL params: load default category
   await selectCategory(selectedCategory.value)
 })
 </script>

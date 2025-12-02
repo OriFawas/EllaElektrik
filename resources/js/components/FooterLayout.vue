@@ -1,5 +1,14 @@
 <script setup>
-import { Link } from '@inertiajs/vue3'
+import { Link, usePage } from '@inertiajs/vue3'
+
+const page = usePage()
+
+const categoryLink = (name) => {
+  const categories = page.props.categories ?? []
+  const cat = categories.find(c => c.name === name || c.slug === name)
+  const slug = cat ? (cat.slug || encodeURIComponent(cat.name)) : encodeURIComponent(name)
+  return `/shop/${slug}`
+}
 </script>
 
 <template>
@@ -28,9 +37,15 @@ import { Link } from '@inertiajs/vue3'
           <div>
             <h2 class="text-xl font-semibold mb-2 text-gray-700">Kategori</h2>
             <ul class="space-y-1 text-gray-600">
-              <li>Elektronik Rumah Tangga</li>
-              <li>Elektronik Dapur</li>
-              <li>Kelistrikan</li>
+              <li>
+                <Link :href="categoryLink('Elektronik Rumah Tangga')" class="hover:text-black transition">Elektronik Rumah Tangga</Link>
+              </li>
+              <li>
+                <Link :href="categoryLink('Elektronik Dapur')" class="hover:text-black transition">Elektronik Dapur</Link>
+              </li>
+              <li>
+                <Link :href="categoryLink('Kelistrikan')" class="hover:text-black transition">Kelistrikan</Link>
+              </li>
             </ul>
           </div>
 

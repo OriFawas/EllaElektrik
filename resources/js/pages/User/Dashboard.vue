@@ -3,6 +3,7 @@ import { Head, usePage, router } from '@inertiajs/vue3'
 import UserLayout from '@/layouts/UserLayout.vue'
 import HeaderLayout from '@/components/HeaderLayout.vue'
 import FooterLayout from '@/components/FooterLayout.vue'
+import InlineNotice from '@/components/InlineNotice.vue'
 import { ref, onMounted, computed, watch } from 'vue'
 
 const form = {
@@ -154,14 +155,20 @@ const submit = async () => {
         const umsg = uerr?.message || (uerr?.errors ? Object.values(uerr.errors).flat().join(', ') : '')
         throw new Error(umsg || 'Gagal mengirim verifikasi')
       }
-      alert('Profil tersimpan & verifikasi dikirim')
+      // Use the inline displayed notice rather than alert
+      // show a local flash for immediate feedback
+      // After successful upload, redirect user to dashboard with `verification_sent` notice
+      router.visit('/user/dashboard?notice=verification_sent')
+      return
     } else {
-      alert('Data profil tersimpan')
+      // Redirect to dashboard so inline success notice can be displayed
+      router.visit('/user/dashboard?notice=profile_saved')
+      return
     }
-    // Reload shared props so badge/form reflect server state
-    router.reload({ only: ['auth'] })
   } catch (e) {
-    alert(e.message || 'Gagal menyimpan profil')
+    const uErr = e.message || 'Gagal menyimpan profil'
+    // show inline notice using query param and server-side flash is not possible here, so fallback to alert for now
+    alert(uErr)
   }
 }
 
@@ -178,7 +185,44 @@ const statusMeta = computed(() => {
     unverified: { label: 'Belum Terverifikasi', cls: 'bg-gray-100 text-gray-700', dot: 'bg-gray-400' },
   }
   return map[verificationStatus.value] ?? map.unverified
-})
+  })
+
+  // Unified inline notification: query, flash, server errors, account status
+  const serverOrderError = computed(() => page.props.errors?.order ?? null)
+  const flashSuccess = computed(() => page.props.flash?.success ?? null)
+  const flashError = computed(() => page.props.flash?.error ?? null)
+  const queryNotice = computed(() => {
+    try { return new URL(window.location.href).searchParams.get('notice') } catch (e) { return null }
+  })
+
+  const displayedNotice = computed(() => {
+    if (flashSuccess.value) return { title: 'Berhasil', text: flashSuccess.value, type: 'success', cls: 'bg-green-50 text-green-700' }
+    if (flashError.value) return { title: 'Gagal', text: flashError.value, type: 'error', cls: 'bg-red-50 text-red-700' }
+    if (serverOrderError.value) {
+      const lower = String(serverOrderError.value).toLowerCase(); const needsUpload = lower.includes('upload') || lower.includes('ktp') || lower.includes('nik')
+      return { title: 'Perhatian', text: serverOrderError.value, type: 'error', cls: 'bg-red-50 text-red-700', ctaLabel: needsUpload ? 'Unggah KTP' : null }
+    }
+    const q = queryNotice.value
+    if (q === 'verification_required') return { title: 'Perhatian', text: 'Unggah KTP untuk bisa melakukan pesanan.', type: 'error', cls: 'bg-red-50 text-red-700', ctaLabel: 'Unggah KTP' }
+    if (q === 'verification_pending') return {title: 'Menunggu Verifikasi', text: 'KTP Anda sudah dikirim, menunggu verifikasi admin.', type: 'warn', cls: 'bg-yellow-50 text-yellow-700'}
+    if (verificationStatus.value === 'unverified') return { title: 'Belum Terverifikasi', text: 'Unggah KTP untuk memverifikasi akun Anda dan bisa melakukan pemesanan.', type: 'info', cls: 'bg-red-50 text-red-700', ctaLabel: 'Unggah KTP' }
+    if (verificationStatus.value === 'pending') return { title: 'Menunggu Verifikasi', text: verificationNote.value || 'KTP menunggu verifikasi admin.', type: 'warn', cls: 'bg-yellow-50 text-yellow-700' }
+    if (q === 'profile_saved') return { title: 'Profil Tersimpan', text: 'Perubahan profil disimpan', type: 'success', cls: 'bg-green-50 text-green-700' }
+    if (q === 'verification_sent') return { title: 'Verifikasi Dikirim', text: 'KTP Anda dikirim, tunggu verifikasi admin.', type: 'success', cls: 'bg-green-50 text-green-700' }
+    return null
+  })
+
+  const dismissNotification = () => { /* no-op for now; inline notice emits dismiss but we don't persist */ }
+
+  const handleNoticeAction = () => {
+    const n = displayedNotice.value
+    if (!n) return
+    if (n.ctaLabel === 'Unggah KTP') {
+      const el = document.getElementById('ktp-file-input')
+      if (el) { el.scrollIntoView({ behavior: 'smooth', block: 'center' }); try { el.focus(); el.click(); } catch(e){} }
+      else router.visit('/user/dashboard?notice=verification_required')
+    }
+  }
 
 // no explicit refresh button
 </script>
@@ -190,15 +234,9 @@ const statusMeta = computed(() => {
   <UserLayout>
     <!-- Container full width -->
     <div class="bg-white p-8 rounded-lg shadow w-full ">
-      <!-- Verification required notice (only shown when redirected from order attempt) -->
-      <div v-if="page.props?.errors?.verification" class="mb-4">
-        <div class="flex items-start gap-3 bg-red-100 text-red-700 px-4 py-3 rounded">
-          <span class="inline-flex items-center justify-center h-2.5 w-2.5 mt-1 rounded-full bg-red-500"></span>
-          <p class="text-sm">{{ page.props.errors.verification }}</p>
-        </div>
-      </div>
       <div class="flex items-center gap-3 mb-6">
         <h1 class="text-2xl font-semibold">Profil Saya</h1>
+
         <span
           :title="verificationStatus === 'rejected' && verificationNote ? verificationNote : ''"
           :class="['inline-flex items-center gap-2 px-2.5 py-1 rounded-full text-xs font-medium', statusMeta.cls]"
@@ -206,6 +244,9 @@ const statusMeta = computed(() => {
           <span :class="['h-2 w-2 rounded-full', statusMeta.dot]"></span>
           {{ statusMeta.label }}
         </span>
+        <div class="ml-3">
+          <InlineNotice :notice="displayedNotice" @dismiss="dismissNotification" @action="handleNoticeAction" />
+        </div>
 
       </div>
 
@@ -258,6 +299,7 @@ const statusMeta = computed(() => {
         <!-- input file, tetap tampil tapi kecil (mirip ukuran KTP) -->
         <div class="mt-1">
           <input
+            id="ktp-file-input"
             type="file"
             accept=".jpg,.jpeg,.png,.pdf"
             @change="onFileChange"

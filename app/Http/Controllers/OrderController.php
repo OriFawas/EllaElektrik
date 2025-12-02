@@ -7,6 +7,7 @@ use App\Models\OrderItem;
 use App\Services\CartService;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -41,10 +42,9 @@ class OrderController extends Controller
                 'days_left' => $order->days_left,
             ]);
 
-        // Completed orders
         $historyOrders = Order::with('items.product')
             ->where('user_id', $user->id)
-            ->where('status', 'completed')
+            ->completed()
             ->orderBy('completed_at', 'desc')
             ->get()
             ->map(fn($order) => [
@@ -53,24 +53,21 @@ class OrderController extends Controller
                 'price' => 'Rp ' . number_format($order->total, 0, ',', '.'),
                 'date' => $order->completed_at ? $order->completed_at->format('d F Y') : $order->created_at->format('d F Y'),
                 'image' => $order->items->first()->product->image_url ?? '/images/products/default.jpg',
-                'status' => 'Selesai',
             ]);
 
-        // Rejected/cancelled orders
-        $rejectedOrders = Order::with('items.product')
-            ->where('user_id', $user->id)
-            ->where('status', 'cancelled')
-            ->orderBy('created_at', 'desc')
-            ->get()
-            ->map(fn($order) => [
-                'id' => $order->id,
-                'name' => $order->items->pluck('name_snapshot')->join(', '),
-                'price' => 'Rp ' . number_format($order->total, 0, ',', '.'),
-                'date' => $order->created_at->format('d F Y'),
-                'image' => $order->items->first()->product->image_url ?? '/images/products/default.jpg',
-                'status' => 'Ditolak',
-                'reason' => $order->cancel_reason ?? null,
-            ]);
+         $rejectedOrders = Order::with('items.product')
+        ->where('user_id', $user->id)
+        ->where('status', 'cancelled')
+        ->orderBy('updated_at', 'desc')
+        ->get()
+        ->map(fn($order) => [
+            'id' => $order->id,
+            'name' => $order->items->pluck('name_snapshot')->join(', '),
+            'price' => 'Rp ' . number_format($order->total, 0, ',', '.'),
+            'date' => $order->updated_at->format('d F Y'),
+            'image' => $order->items->first()->product->image_url ?? '/images/products/default.jpg',
+            'reason' => $order->reject_reason ?? 'Pesanan ditolak oleh admin',
+        ]);
 
         return Inertia::render('User/Order', [
             'activeOrders' => $activeOrders,
@@ -89,17 +86,6 @@ class OrderController extends Controller
             return redirect()->route('home');
         }
 
-        // Map internal statuses to frontend tokens:
-        // - 'ST1' = ready for pickup (user can pick up)
-        // - 'ST2' = completed (order finished)
-        // - 'ST3' = cancelled/rejected (order was rejected)
-        $statusToken = 'ST2';
-        if ($order->status === 'ready_for_pickup') {
-            $statusToken = 'ST1';
-        } elseif ($order->status === 'cancelled') {
-            $statusToken = 'ST3';
-        }
-
         return Inertia::render('StatusOrder', [
             'order' => [
                 'id' => 'ORD-' . str_pad($order->id, 6, '0', STR_PAD_LEFT),
@@ -107,7 +93,7 @@ class OrderController extends Controller
                 'subtotal' => $order->subtotal,
                 'biayaLayanan' => $order->service_fee,
                 'total' => $order->total,
-                'status' => $statusToken,
+                'status' => $order->status === 'ready_for_pickup' ? 'ST1' : 'ST2',
                 'days_left' => $order->days_left,
             ],
         ]);
@@ -116,19 +102,30 @@ class OrderController extends Controller
     /**
      * Create order from cart
      */
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request): RedirectResponse|JsonResponse
     {
         $user = Auth::user();
-        // Require account verification before placing orders
-        if (!$user) {
-            return redirect()->route('login');
+        // ✅ 1. Cek apakah user sudah upload KTP
+        if (!$user->ktp_path) {
+            $msg = 'Anda harus upload KTP dan menunggu verifikasi admin sebelum membuat pesanan.';
+            if ($request->expectsJson()) {
+                return response()->json(['message' => $msg], 422);
+            }
+            // Redirect with a notice query param so the dashboard displays the standard inline notice (yellow/red depending on the notice)
+            return redirect()->route('user.dashboard', ['notice' => 'verification_required']);
         }
-        $isEmailVerified = !is_null($user->email_verified_at);
-        $isProfileVerified = ($user->verification_status ?? null) === 'approved' || !is_null($user->verified_at);
-        if (!$isEmailVerified || !$isProfileVerified) {
-            return redirect()->route('user.dashboard')
-                ->withErrors(['verification' => 'Akun Anda belum terverifikasi. Mohon selesaikan verifikasi sebelum melakukan pesanan.']);
+
+        // ✅ 2. Cek apakah user sudah diverifikasi admin
+        if ($user->verification_status !== 'verified') {
+            $msg = 'Akun Anda belum diverifikasi admin. Tunggu persetujuan admin.';
+            if ($request->expectsJson()) {
+                return response()->json(['message' => $msg], 403);
+            }
+            // If user is pending verification, show pending notice, otherwise require upload
+            $notice = $user->verification_status === 'pending' ? 'verification_pending' : 'verification_required';
+            return redirect()->route('user.dashboard', ['notice' => $notice]);
         }
+
         $cart = $this->cartService->getActiveCart($user);
         $cart->load('items.product');
 
@@ -168,10 +165,16 @@ class OrderController extends Controller
 
             DB::commit();
 
-            return redirect()->route('orders.show', $order)->with('success', 'Pesanan berhasil dibuat.');
+                // For normal web requests redirect to the order status page and include a success flash + notice
+                return redirect()->route('orders.show', ['order' => $order->id, 'notice' => 'order_success'])
+                    ->with('success', 'Pesanan berhasil dibuat.');
         } catch (\Exception $e) {
             DB::rollBack();
-            return redirect()->back()->withErrors(['order' => 'Gagal membuat pesanan. Silakan coba lagi.']);
+            // Prefer flash error for consistency, and return JSON for AJAX requests
+            $msg = 'Gagal membuat pesanan. Silakan coba lagi.';
+            return $request->expectsJson()
+                ? response()->json(['message' => $msg], 500)
+                : redirect()->back()->with('error', $msg);
         }
     }
 }

@@ -1,36 +1,49 @@
 <script setup lang="ts">
-import AppLogoIcon from '@/components/AppLogoIcon.vue';
 import { home } from '@/routes';
 import { Link } from '@inertiajs/vue3';
 
-defineProps<{
+const props = defineProps<{
     title?: string;
     description?: string;
 }>();
 </script>
 
 <template>
+  <div class="min-h-screen w-full flex">
+
+    <!-- LEFT SIDE -->
     <div
-        class="flex min-h-svh flex-col items-center justify-center gap-6 bg-background p-6 md:p-10"
+      class="hidden lg:flex w-1/2 bg-[#123458] text-white px-40 py-15 flex-col justify-center items-center pr-6"
     >
-        <div class="w-full max-w-sm">
-            <div class="flex flex-col gap-8">
-                <div class="flex flex-col items-center gap-4">
-                    <Link
-                        :href="home()"
-                        class="flex flex-col items-center gap-2 font-medium"
-                    >
-                        <span class="sr-only">{{ title }}</span>
-                    </Link>
-                    <div class="space-y-2 text-center">
-                        <h1 class="text-xl font-medium">{{ title }}</h1>
-                        <p class="text-center text-sm text-muted-foreground">
-                            {{ description }}
-                        </p>
-                    </div>
-                </div>
-                <slot />
-            </div>
-        </div>
+
+      <!-- Logo produk -->
+      <img
+        src="/images/produklogo.png"
+        alt="Logo Produk"
+        class="w-[550px] drop-shadow-xl mb-2"
+      />
+
+      <!-- Title & Description -->
+      <div class="space-y-4 text-left">
+    <h1 class="text-3xl font-bold">
+        {{ title ?? "Solusi Elektronik Terlengkap" }}
+    </h1>
+
+    <p class="text-white/80 text-sm leading-relaxed max-w-md">
+        {{ description ?? "Belanja Elektronik Mudah & Terpercaya, semua ada di Ella Elektrik." }}
+    </p>
+</div>
+
     </div>
+
+    <!-- RIGHT SIDE (Slot / Form Login atau Register) -->
+    <div class="flex-1 flex items-center justify-center bg-[#123458] px-6 py-10">
+      <div class="w-full max-w-md">
+        <div class="bg-white rounded-lg shadow-lg p-8">
+        <slot />
+        </div>
+      </div>
+    </div>
+
+  </div>
 </template>
