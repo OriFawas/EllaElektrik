@@ -11,6 +11,32 @@ use Illuminate\Support\Facades\Storage;
 class ProductController extends Controller
 {
     /**
+     * Get all products (for API)
+     */
+    public function index(Request $request)
+    {
+        // Check token abilities (fallback if middleware fails)
+        if ($request->expectsJson()) {
+            $user = $request->user();
+            if ($user && $user->currentAccessToken()) {
+                $abilities = $user->currentAccessToken()->abilities;
+                if (!in_array('admin:*', $abilities)) {
+                    return response()->json([
+                        'message' => 'Insufficient permissions. Admin access required.',
+                        'your_abilities' => $abilities
+                    ], 403);
+                }
+            }
+        }
+        
+        $products = Product::with(['subkategori.kategori'])
+            ->orderBy('created_at', 'desc')
+            ->paginate(20);
+
+        return response()->json($products);
+    }
+
+    /**
      * Store a newly created product.
      */
     public function store(Request $request)
@@ -125,10 +151,25 @@ class ProductController extends Controller
     /**
      * Remove the specified product.
      */
-    public function destroy(Product $product)
+    public function destroy(Request $request, $id)
     {
+        $product = Product::find($id);
+        
+        if (!$product) {
+            return response()->json([
+                'message' => 'Product not found'
+            ], 404);
+        }
+
         // Optionally remove image file
         $product->delete();
+
+        // Check if request expects JSON (API) or redirect (web)
+        if ($request->expectsJson()) {
+            return response()->json([
+                'message' => 'Product deleted successfully'
+            ]);
+        }
 
         return redirect()->route('admin.products')->with('success', 'Product deleted');
     }

@@ -58,15 +58,29 @@ class CartController extends Controller
             'qty' => 'required|integer|min:0|max:99'
         ]);
         $user = Auth::user();
-        $cart = $this->cartService->updateQty($user, $itemId, $data['qty']);
-        return response()->json($this->transform($cart));
+        
+        try {
+            $cart = $this->cartService->updateQty($user, $itemId, $data['qty']);
+            return response()->json($this->transform($cart));
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json([
+                'message' => 'Cart item not found or does not belong to your cart'
+            ], 404);
+        }
     }
 
     public function destroy(Request $request, int $itemId)
     {
         $user = Auth::user();
-        $cart = $this->cartService->removeItem($user, $itemId);
-        return response()->json($this->transform($cart));
+        
+        try {
+            $cart = $this->cartService->removeItem($user, $itemId);
+            return response()->json($this->transform($cart));
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json([
+                'message' => 'Cart item not found or does not belong to your cart'
+            ], 404);
+        }
     }
 
         public function count()

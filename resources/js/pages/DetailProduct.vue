@@ -182,7 +182,11 @@ const addToCart = async () => {
             body: JSON.stringify({ product_id: product.id, qty: quantity.value })
         })
 
-        if (res.status === 401) { router.visit('/login'); return }
+        if (res.status === 401) { 
+            // Not logged in - redirect to login with return URL
+            window.location.href = '/login?redirect=' + encodeURIComponent(window.location.pathname)
+            return 
+        }
         if (res.status === 419) {
             // CSRF/session expired — reload to refresh tokens and session
             window.location.reload()
