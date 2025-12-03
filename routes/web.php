@@ -54,7 +54,7 @@ Route::post('/admin/products', [ProductController::class, 'store'])
     ->middleware(['auth', 'verified', 'admin'])
     ->name('admin.products.store');
 
-Route::put('/admin/products/{product}', [ProductController::class, 'update'])
+Route::match(['put', 'post'], '/admin/products/{product}', [ProductController::class, 'update'])
     ->middleware(['auth', 'verified', 'admin'])
     ->name('admin.products.update');
 

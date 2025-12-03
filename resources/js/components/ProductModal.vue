@@ -192,7 +192,12 @@ function close() {
 function submit() {
   // attach subkategori_product_id is already bound
   if (props.mode === 'edit' && props.product) {
-    form.put(`/admin/products/${props.product.id}`, {
+    // For file uploads with PUT, we need to use POST with _method spoofing
+    form.transform((data) => ({
+      ...data,
+      _method: 'PUT'
+    })).post(`/admin/products/${props.product.id}`, {
+      forceFormData: true,
       onSuccess: () => {
         close();
       },
