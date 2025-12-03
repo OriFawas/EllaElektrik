@@ -24,15 +24,15 @@ Route::get('/products', [\App\Http\Controllers\Api\ProductController::class, 'in
 // Authentication endpoints
 Route::post('/login', [AuthController::class, 'login']);
 
-// Protected API routes (require authentication via token OR session)
-Route::middleware(['auth:sanctum,web'])->group(function () {
+// Protected API routes (require Bearer token authentication)
+Route::middleware(['auth:sanctum'])->group(function () {
     // User info and logout
     Route::get('/user', [AuthController::class, 'user']);
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::post('/logout-all', [AuthController::class, 'logoutAll']);
     
-    // Cart endpoints (authenticated users - supports both Postman tokens AND web session)
-    Route::prefix('cart')->group(function () {
+    // Cart endpoints for Postman (token-based) - URL: /api/v1/cart/*
+    Route::prefix('v1/cart')->group(function () {
         Route::get('/', [CartController::class, 'show']);
         Route::get('/count', [CartController::class, 'count']);
         Route::post('/items', [CartController::class, 'store']);

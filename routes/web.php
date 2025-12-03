@@ -194,5 +194,11 @@ Route::middleware(['auth'])->get('/api/me', [\App\Http\Controllers\User\ProfileC
 require __DIR__.'/settings.php';
 require __DIR__.'/auth.php';
 
-// Cart API moved to routes/api.php for Sanctum token-based authentication
-// Web session-based cart endpoints removed to avoid conflicts
+// Cart API endpoints for website (session-based authentication) - URL: /api/cart/*
+Route::middleware(['auth'])->group(function () {
+    Route::get('/api/cart', [CartController::class, 'show']);
+    Route::get('/api/cart/count', [CartController::class, 'count']);
+    Route::post('/api/cart/items', [CartController::class, 'store']);
+    Route::put('/api/cart/items/{itemId}', [CartController::class, 'update']);
+    Route::delete('/api/cart/items/{itemId}', [CartController::class, 'destroy']);
+});

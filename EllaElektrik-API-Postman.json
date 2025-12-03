@@ -211,11 +211,11 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/api/cart",
+							"raw": "{{base_url}}/api/v1/cart",
 							"host": ["{{base_url}}"],
-							"path": ["api", "cart"]
+							"path": ["api", "v1", "cart"]
 						},
-						"description": "Get current user's cart with all items (requires authentication)"
+						"description": "Get current user's cart with all items (requires Bearer token)"
 					},
 					"response": []
 				},
@@ -240,11 +240,11 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/api/cart/count",
+							"raw": "{{base_url}}/api/v1/cart/count",
 							"host": ["{{base_url}}"],
-							"path": ["api", "cart", "count"]
+							"path": ["api", "v1", "cart", "count"]
 						},
-						"description": "Get total item count in cart (requires authentication)"
+						"description": "Get total item count in cart (requires Bearer token)"
 					},
 					"response": []
 				},
@@ -274,14 +274,14 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"product_id\": 1,\n    \"qty\": 2\n}"
+							"raw": "{\n    \"product_id\": 13,\n    \"qty\": 2\n}"
 						},
 						"url": {
-							"raw": "{{base_url}}/api/cart/items",
+							"raw": "{{base_url}}/api/v1/cart/items",
 							"host": ["{{base_url}}"],
-							"path": ["api", "cart", "items"]
+							"path": ["api", "v1", "cart", "items"]
 						},
-						"description": "Add product to cart (requires authentication). If item exists, quantity will be added."
+						"description": "Add product to cart (requires Bearer token). If item exists, quantity will be added."
 					},
 					"response": []
 				},
@@ -314,9 +314,9 @@
 							"raw": "{\n    \"qty\": 5\n}"
 						},
 						"url": {
-							"raw": "{{base_url}}/api/cart/items/:itemId",
+							"raw": "{{base_url}}/api/v1/cart/items/:itemId",
 							"host": ["{{base_url}}"],
-							"path": ["api", "cart", "items", ":itemId"],
+							"path": ["api", "v1", "cart", "items", ":itemId"],
 							"variable": [
 								{
 									"key": "itemId",
@@ -325,7 +325,7 @@
 								}
 							]
 						},
-						"description": "Update quantity of cart item (requires authentication). Set qty to 0 to remove item."
+						"description": "Update quantity of cart item (requires Bearer token). Set qty to 0 to remove item."
 					},
 					"response": []
 				},
@@ -350,9 +350,9 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/api/cart/items/:itemId",
+							"raw": "{{base_url}}/api/v1/cart/items/:itemId",
 							"host": ["{{base_url}}"],
-							"path": ["api", "cart", "items", ":itemId"],
+							"path": ["api", "v1", "cart", "items", ":itemId"],
 							"variable": [
 								{
 									"key": "itemId",
@@ -361,7 +361,7 @@
 								}
 							]
 						},
-						"description": "Remove item from cart (requires authentication)"
+						"description": "Remove item from cart (requires Bearer token)"
 					},
 					"response": []
 				}
