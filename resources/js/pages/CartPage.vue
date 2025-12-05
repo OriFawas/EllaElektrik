@@ -100,7 +100,7 @@ onMounted(fetchCart)
         Keranjangmu kosong.
       </div>
 
-      <div v-else class="px-8 grid grid-cols-1 lg:grid-cols-2 gap-10 py-10">
+      <div class="px-4 sm:px-6 lg:px-8 grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-10 py-8">
 
         <!-- Daftar Item -->
         <div class="space-y-6">
@@ -109,7 +109,7 @@ onMounted(fetchCart)
             :key="item.id"
             class="flex gap-4 border-b pb-4"
           >
-            <img :src="item.image" class="w-24 h-24 object-cover rounded">
+            <img :src="item.image" class="w-20 h-20 sm:w-24 sm:h-24 object-cover rounded">
 
             <div class="flex-1">
               <p class="font-semibold text-lg">{{ item.name }}</p>
@@ -118,7 +118,7 @@ onMounted(fetchCart)
                 <span>Jumlah : {{ item.qty }}</span>
                 <button @click="updateQty(item.id, Math.min(99, item.qty + 1))" class="px-2 py-1 border rounded">+</button>
               </div>
-              <p class="font-semibold">Rp. {{ Number(item.unit_price || item.unit_price_snapshot || 0).toLocaleString() }}</p>
+              <p class="font-semibold mt-2">Rp. {{ Number(item.unit_price || item.unit_price_snapshot || 0).toLocaleString() }}</p>
             </div>
 
             <button @click="removeItem(item.id)" class="text-red-500 text-sm hover:underline">
@@ -128,14 +128,15 @@ onMounted(fetchCart)
         </div>
 
         <!-- Ringkasan Pesanan -->
-        <div class="border-l px-10">
+        <div v-if="!loading && cart.items.length > 0"
+        class="border-t lg:border-t-0 lg:border-l px-6 lg:px-10 pt-6 lg:pt-0">
           <h2 class="text-xl font-semibold mb-6 text-center">Ringkasan Pesanan</h2>
 
           <div class="text-sm space-y-2 mb-6">
 
-            <div v-for="item in cart.items" :key="item.id" class="flex justify-between">
+            <div v-for="item in cart.items" :key="item.id" class="flex justify-between items-center">
               <span>{{ item.name }}</span>
-              <span>Rp. {{ Number(item.line_total).toLocaleString() }}</span>
+              <span class="font-medium text-right w-28">Rp. {{ Number(item.line_total).toLocaleString() }}</span>
             </div>
 
             <hr class="my-2" />

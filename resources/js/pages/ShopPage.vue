@@ -4,6 +4,9 @@ import FooterLayout from '@/components/FooterLayout.vue'
 import { ref, computed, watch, onMounted } from 'vue'
 import { Link, usePage } from '@inertiajs/vue3'
 
+// mobile filter collapsible state
+const isMobileFilterOpen = ref(false)
+
 // kategori aktif (default)
 const selectedCategory = ref('Elektronik Rumah Tangga')
 
@@ -206,105 +209,164 @@ onMounted(async () => {
 
 <template>
   <div class="min-h-screen flex flex-col bg-gray-100">
-    <!-- Header -->
     <HeaderLayout />
 
-    <!-- Main Content -->
-    <main class="flex flex-1 px-12 py-8 gap-10 pt-29">
-      <!-- Sidebar Filter -->
-      <aside class="w-1/4 space-y-6 sticky top-30 self-start">
-        <div class="flex justify-between items-center">
-          <h2 class="font-semibold text-lg mb-3">Filter</h2>
+    <main
+      class="flex flex-1 px-4 sm:px-6 md:px-10 lg:px-12 py-8 gap-6 lg:gap-10 pt-24 flex-col lg:flex-row"
+    >
+      <!-- =======================
+           SIDEBAR FILTER
+      ======================== -->
+      <aside
+        class="w-full lg:w-[15%] space-y-6 lg:sticky lg:top-32 lg:self-start 
+               bg-white lg:bg-transparent p-2 lg:p-2 rounded-lg shadow lg:shadow-none"
+      >
+        <!-- Header filter (mobile collapsible) -->
+        <div
+          class="flex justify-between items-center lg:hidden cursor-pointer"
+          @click="isMobileFilterOpen = !isMobileFilterOpen"
+        >
+          <h2 class="font-semibold text-lg">Filter</h2>
+
+          <svg
+            :class="[
+              'w-6 h-6 transition-transform',
+              isMobileFilterOpen ? 'rotate-180' : 'rotate-0'
+            ]"
+            fill="none" stroke="currentColor" viewBox="0 0 24 24"
+          >
+            <path stroke-width="2" d="M19 9l-7 7-7-7" />
+          </svg>
         </div>
 
-        <div>
-          <h3 class="font-medium mb-2">Kategori</h3>
-          <ul class="space-y-1 text-gray-700">
-            <li>
-              <button
-                @click="selectCategory('Elektronik Rumah Tangga')"
-                :class="selectedCategory === 'Elektronik Rumah Tangga' ? 'font-bold text-[#183045]' : 'hover:underline'"
-              >
-                Elektronik Rumah Tangga
-              </button>
-            </li>
-            <li>
-              <button
-                @click="selectCategory('Elektronik Dapur')"
-                :class="selectedCategory === 'Elektronik Dapur' ? 'font-bold text-[#183045]' : 'hover:underline'"
-              >
-                Elektronik Dapur
-              </button>
-            </li>
-            <li>
-              <button
-                @click="selectCategory('Kelistrikan')"
-                :class="selectedCategory === 'Kelistrikan' ? 'font-bold text-[#183045]' : 'hover:underline'"
-              >
-                Kelistrikan
-              </button>
-            </li>
-          </ul>
-        </div>
+  <div
+        v-if="selectedCategory"
+    class="mb-2 text-sm text-[#183045] font-semibold lg:hidden"
+  >
+    <span
+      class="underline cursor-pointer"
+      @click="selectCategory(null)"
+    >
+      {{ selectedCategory }}
+    </span>
+  </div>
 
-        <div>
-          <h3 class="font-medium mb-2">Subkategori</h3>
-          <ul class="space-y-1 text-gray-700">
-            <li v-for="(sub, index) in filteredSubcategories" :key="sub.id">
-              <button
-                @click="toggleSubcategory(sub.id)"
-                :aria-pressed="isSubSelected(sub.id)"
-                :class="isSubSelected(sub.id) ? 'font-bold text-[#183045]' : 'hover:underline'"
-              >
-                {{ sub.name }}
-              </button>
-            </li>
-          </ul>
+        <div
+          :class="[
+            'transition-all overflow-hidden lg:overflow-visible lg:max-h-none',
+            isMobileFilterOpen ? 'max-h-screen mt-4' : 'max-h-0 lg:max-h-none'
+          ]"
+        >
+          <!-- Kategori -->
+          <div class="mt-3 lg:mt-0">
+            <h3 class="font-medium mb-2">Kategori</h3>
+            <ul class="space-y-1 text-gray-700">
+              <li>
+                <button
+                  @click="selectCategory('Elektronik Rumah Tangga')"
+                  class="max-w-[200px] text-left"
+                  :class="selectedCategory === 'Elektronik Rumah Tangga'
+                    ? 'font-bold text-[#183045]'
+                    : 'hover:underline'"
+                >
+                  Elektronik Rumah Tangga
+                </button>
+              </li>
+              <li>
+                <button
+                  @click="selectCategory('Elektronik Dapur')"
+                  class="max-w-[200px] text-left"
+                  :class="selectedCategory === 'Elektronik Dapur'
+                    ? 'font-bold text-[#183045]'
+                    : 'hover:underline'"
+                >
+                  Elektronik Dapur
+                </button>
+              </li>
+              <li>
+                <button
+                  @click="selectCategory('Kelistrikan')"
+                  :class="selectedCategory === 'Kelistrikan'
+                    ? 'font-bold text-[#183045]'
+                    : 'hover:underline'"
+                >
+                  Kelistrikan
+                </button>
+              </li>
+            </ul>
+          </div>
+
+          <!-- Subkategori -->
+          <div class="mt-6">
+            <h3 class="font-medium mb-2">Subkategori</h3>
+            <ul class="space-y-1 text-gray-700">
+              <li v-for="(sub, index) in filteredSubcategories" :key="sub.id">
+                <button
+                  @click="toggleSubcategory(sub.id)"
+                  :class="isSubSelected(sub.id)
+                    ? 'font-bold text-[#183045]'
+                    : 'hover:underline'"
+                >
+                  {{ sub.name }}
+                </button>
+              </li>
+            </ul>
+          </div>
         </div>
       </aside>
 
-      <!-- Produk Grid (placeholder cards removed) -->
+      <!-- PRODUK TETAP -->
       <section class="flex-1">
-        <!-- Product grid: render product cards loaded from API. If none selected, show hint. -->
-        <div v-if="loading" class="flex items-center justify-center h-56 text-gray-500">Memuat produk...</div>
+  <div v-if="loading" class="flex items-center justify-center h-56 text-gray-500">
+    Memuat produk...
+  </div>
 
-        <div v-else-if="error" class="flex items-center justify-center h-56 text-red-500">Gagal memuat produk: {{ error }}</div>
+  <div v-else-if="error" class="flex items-center justify-center h-56 text-red-500">
+    Gagal memuat produk: {{ error }}
+  </div>
 
-        <div v-else-if="products.length > 0" class="grid grid-cols-5 gap-6">
-          <div
-            v-for="(product, index) in products"
-            :key="product.id || index"
-            class="bg-white shadow-md rounded-lg overflow-hidden hover:shadow-lg transition"
-          >
-            <Link :href="`/products/${product.slug}`" class="block">
-              <img
-                :src="product.image_url || '/images/placeholder.png'"
-                :alt="product.name || 'Product'"
-                class="w-full h-40 object-cover"
-              />
-              <div class="p-4">
-                <h4 class="font-medium">{{ product.name }}</h4>
-                <p class="text-gray-600">{{ formatPrice(product.price) }}</p>
-                <p class="mt-1">
-                  <span :class="[
-                    'px-2 py-0.5 rounded-full text-xs',
-                    product.stock <= 0 ? 'bg-red-100 text-red-700' : (product.stock <= 10 ? 'bg-yellow-100 text-yellow-700' : 'bg-green-100 text-green-700')
-                  ]">
-                    Stok: {{ product.stock ?? 0 }}
-                  </span>
-                </p>
-              </div>
-            </Link>
-          </div>
+  <div
+    v-else-if="products.length > 0"
+    class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6"
+  >
+    <div
+      v-for="(product, index) in products"
+      :key="product.id || index"
+      class="bg-white shadow-md rounded-lg overflow-hidden hover:shadow-lg transition"
+    >
+      <Link :href="`/products/${product.slug}`" class="block">
+        <img
+          :src="product.image_url || '/images/placeholder.png'"
+          :alt="product.name || 'Product'"
+          class="w-full h-40 object-cover"
+        />
+        <div class="p-4">
+          <h4 class="font-medium">{{ product.name }}</h4>
+          <p class="text-gray-600">{{ formatPrice(product.price) }}</p>
+          <p class="mt-1">
+            <span
+              :class="[
+                'px-2 py-0.5 rounded-full text-xs',
+                product.stock <= 0 ? 'bg-red-100 text-red-700' :
+                product.stock <= 10 ? 'bg-yellow-100 text-yellow-700' :
+                'bg-green-100 text-green-700'
+              ]"
+            >
+              Stok: {{ product.stock ?? 0 }}
+            </span>
+          </p>
         </div>
+      </Link>
+    </div>
+  </div>
 
-        <div v-else class="flex items-center justify-center h-56 text-gray-500">
-          Pilih subkategori untuk melihat produk.
-        </div>
-      </section>
+  <div v-else class="flex items-center justify-center h-56 text-gray-500">
+    Pilih subkategori untuk melihat produk.
+  </div>
+</section>
+
     </main>
 
-    <!-- Footer -->
     <FooterLayout />
   </div>
 </template>

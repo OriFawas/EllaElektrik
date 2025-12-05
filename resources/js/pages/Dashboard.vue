@@ -3,13 +3,13 @@
     <div class="space-y-6">
 
       <!-- Judul -->
-      <h1 class="text-2xl font-semibold">Dashboard</h1>
+      <h1 class="text-xl md:text-2xl font-semibold">Dashboard</h1>
 
-      <!-- Top Stats -->
-      <div class="grid grid-cols-4 gap-4">
+      <!-- ================= TOP STATS ================= -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div class="bg-white shadow p-4 rounded-lg">
           <p class="text-sm text-gray-500">Total Pesanan</p>
-          <h2 class="text-3xl font-bold mt-1">120</h2>
+          <h2 class="text-2xl md:text-3xl font-bold mt-1">120</h2>
           <p class="text-sm text-gray-500">from last month</p>
         </div>
 
@@ -29,20 +29,21 @@
         </div>
       </div>
 
-      <!-- Grafik & Best Seller -->
-      <div class="grid grid-cols-3 gap-4">
-        
-        <!-- Grafik Placeholder -->
-        <div class="bg-white shadow p-4 rounded-lg col-span-2">
-          <div class="flex justify-between mb-3">
+      <!-- ================= GRAFIK + BEST SELLER ================= -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
+
+        <!-- Grafik -->
+        <div class="bg-white shadow p-4 rounded-lg lg:col-span-2">
+          <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-3 gap-3">
             <h3 class="font-semibold">Sale Graph</h3>
-            <div class="space-x-2">
+            <div class="flex flex-wrap gap-2">
               <button class="px-3 py-1 text-sm border rounded-lg">Weekly</button>
               <button class="px-3 py-1 text-sm border rounded-lg bg-blue-600 text-white">Monthly</button>
               <button class="px-3 py-1 text-sm border rounded-lg">Yearly</button>
             </div>
           </div>
-          <div class="h-48 bg-gray-100 rounded-lg flex items-center justify-center text-gray-400 text-sm">
+
+          <div class="h-36 sm:h-40 md:h-48 bg-gray-100 rounded-lg flex items-center justify-center text-gray-400 text-sm">
             Grafik Nanti Disini
           </div>
         </div>
@@ -54,7 +55,7 @@
           <div class="flex items-center gap-3 mb-3">
             <div class="w-10 h-10 bg-gray-300 rounded"></div>
             <div>
-              <p>Lampu LED</p>
+              <p class="text-sm md:text-base">Lampu LED</p>
               <span class="text-sm text-gray-500">100 terjual</span>
             </div>
           </div>
@@ -75,45 +76,51 @@
             </div>
           </div>
 
-          <button class="mt-4 bg-blue-600 text-white px-4 py-2 rounded-lg w-full">Report</button>
+          <button class="mt-4 bg-blue-600 text-white px-4 py-2 rounded-lg w-full">
+            Report
+          </button>
         </div>
       </div>
 
-      <!-- Recent Orders -->
+      <!-- ================= RECENT ORDERS ================= -->
       <div class="bg-white shadow rounded-lg p-4">
         <h3 class="font-semibold mb-4">Recent Orders</h3>
 
-        <table class="min-w-full text-left">
-          <thead>
-            <tr class="border-b text-sm text-gray-600">
-              <th class="py-2">Product</th>
-              <th>Order ID</th>
-              <th>Date</th>
-              <th>Customer</th>
-              <th>Status</th>
-              <th>Amount</th>
-            </tr>
-          </thead>
+        <!-- Wrapper agar table bisa scroll di HP -->
+        <div class="overflow-x-auto">
+          <table class="min-w-full text-left text-sm">
+            <thead>
+              <tr class="border-b text-gray-600 whitespace-nowrap">
+                <th class="py-2 px-2">Product</th>
+                <th class="px-2">Order ID</th>
+                <th class="px-2">Date</th>
+                <th class="px-2">Customer</th>
+                <th class="px-2">Status</th>
+                <th class="px-2">Amount</th>
+              </tr>
+            </thead>
 
-          <tbody class="text-sm">
-            <tr class="border-b hover:bg-gray-50">
-              <td class="py-2">xxxxx</td>
-              <td>#25426</td>
-              <td>Nov 8th, 2023</td>
-              <td>Kavin</td>
-              <td class="text-blue-600">Proses</td>
-              <td>Rp 200.000</td>
-            </tr>
-            <tr class="border-b hover:bg-gray-50">
-              <td class="py-2">xxxxx</td>
-              <td>#25425</td>
-              <td>Nov 7th, 2023</td>
-              <td>Komael</td>
-              <td class="text-green-600">Selesai</td>
-              <td>Rp 200.000</td>
-            </tr>
-          </tbody>
-        </table>
+            <tbody>
+              <tr class="border-b hover:bg-gray-50 whitespace-nowrap">
+                <td class="py-2 px-2">xxxxx</td>
+                <td class="px-2">#25426</td>
+                <td class="px-2">Nov 8th, 2023</td>
+                <td class="px-2">Kavin</td>
+                <td class="px-2 text-blue-600">Proses</td>
+                <td class="px-2">Rp 200.000</td>
+              </tr>
+
+              <tr class="border-b hover:bg-gray-50 whitespace-nowrap">
+                <td class="py-2 px-2">xxxxx</td>
+                <td class="px-2">#25425</td>
+                <td class="px-2">Nov 7th, 2023</td>
+                <td class="px-2">Komael</td>
+                <td class="px-2 text-green-600">Selesai</td>
+                <td class="px-2">Rp 200.000</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
 
     </div>
@@ -121,5 +128,5 @@
 </template>
 
 <script setup>
-import AdminLayout from '@/layouts/AdminLayout.vue';
+import AdminLayout from '@/layouts/AdminLayout.vue'
 </script>

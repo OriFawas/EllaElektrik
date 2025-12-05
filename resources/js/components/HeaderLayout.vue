@@ -1,16 +1,28 @@
 <template>
   <header class="bg-[#183045] text-white shadow-md w-full fixed top-0 left-0 z-50">
-    <div class="flex items-center justify-between px-12 py-4">
-      <!-- Kiri: Logo + Menu -->
-      <div class="flex items-center space-x-12">
-      <!-- Logo + Nama -->
-      <Link href="/" class="flex items-center space-x-3 hover:opacity-90 transition">
-        <img src="/images/logoella.png" alt="Logo Ella Elektrik" class="h-12 w-auto" />
-        <span class="font-semibold text-lg tracking-wide">Ella Elektrik</span>
-      </Link>
+    <!-- TOP BAR -->
+    <div class="flex items-center justify-between px-4 md:px-12 py-3 md:py-4">
+      
+      <!-- LEFT: Logo + Hamburger -->
+      <div class="flex items-center gap-3 md:gap-6 lg:gap-12">
 
-        <!-- Menu -->
-        <nav class="flex items-center space-x-8 text-base">
+        <!-- Hamburger mobile -->
+        <button 
+          @click="mobileMenu = !mobileMenu"
+          class="text-white text-2xl md:hidden"
+        >
+          <i class="fas fa-bars"></i>
+        </button>
+
+        <!-- Logo -->
+        <Link href="/" class="flex items-center space-x-3 hover:opacity-90 transition">
+          <img src="/images/logoella.png" alt="Logo Ella Elektrik" class="h-10 md:h-12 w-auto" />
+          <span class="font-semibold text-lg tracking-wide hidden sm:block">Ella Elektrik</span>
+        </Link>
+
+        <!-- DESKTOP MENU -->
+        <nav class="hidden md:flex items-center space-x-8">
+
           <!-- Kategori dropdown -->
           <div
             class="relative category-dropdown"
@@ -29,22 +41,20 @@
               <i class="fas fa-chevron-down text-sm"></i>
             </button>
 
-            <!-- Dropdown panel -->
+            <!-- DROPDOWN PANEL -->
             <div
               v-if="categoryOpen"
-              class="absolute left-0 top-full mt-1 w-[62rem] bg-white text-gray-800 rounded-md shadow-xl overflow-hidden z-50"
+              class="absolute left-0 top-full mt-1 w-screen md:w-[62rem] bg-white text-gray-800
+                     rounded-md shadow-xl overflow-hidden z-50"
               role="menu"
-              @mouseenter="openCategoryDropdown"
-              @mouseleave="startCloseCategoryTimer"
             >
-              <!-- Header -->
               <div class="border-b border-gray-100 px-4 py-3 flex items-center justify-between">
                 <h3 class="text-lg font-semibold text-gray-900">Kategori</h3>
               </div>
 
-              <div class="p-4 flex gap-6">
-                <!-- Left: category list (compact) -->
-                <ul class="w-1/4 max-h-[60vh] overflow-y-auto divide-y divide-gray-100 pr-2">
+              <div class="p-4 flex flex-col md:flex-row gap-6">
+                <!-- Category list -->
+                <ul class="md:w-1/4 max-h-[60vh] overflow-y-auto divide-y divide-gray-100 pr-2">
                   <li
                     v-for="cat in categories"
                     :key="cat.id"
@@ -54,21 +64,35 @@
                     <Link
                       :href="`/shop/${cat.slug}`"
                       class="flex items-center gap-2 text-sm"
-                      @focus="setActiveCategory(cat.id)">
-                      <span :class="[ 'w-1 h-5 inline-block mr-2', activeCategoryId == cat.id ? 'bg-[#183045]' : 'bg-transparent' ]" />
-                      <span :class="[ activeCategoryId == cat.id ? 'font-semibold text-[#183045]' : 'text-gray-700' ]">{{ cat.name }}</span>
+                    >
+                      <span :class="[
+                        'w-1 h-5 inline-block mr-2',
+                        activeCategoryId == cat.id ? 'bg-[#183045]' : 'bg-transparent'
+                      ]" />
+                      <span :class="[
+                        activeCategoryId == cat.id
+                          ? 'font-semibold text-[#183045]'
+                          : 'text-gray-700'
+                      ]">
+                        {{ cat.name }}
+                      </span>
                     </Link>
                   </li>
                 </ul>
 
-                <!-- Right: subcategories for active category (split into columns) -->
-                <div class="flex-1">
-                  <div v-if="activeCategory" class="grid grid-cols-3 gap-6">
-                    <div class="col-span-3 flex items-start justify-between">
-                      <div class="text-lg font-medium text-gray-900">{{ activeCategory.name }}</div>
+                <!-- Right subcategories -->
+                <div class="md:flex-1">
+                  <div v-if="activeCategory" class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="md:col-span-3 flex items-start justify-between">
+                      <div class="text-lg font-medium text-gray-900">
+                        {{ activeCategory.name }}
+                      </div>
                     </div>
 
-                    <div v-for="col in splitSubcategories(activeCategory.subkategories, 3)" :key="JSON.stringify(col)">
+                    <div
+                      v-for="col in splitSubcategories(activeCategory.subkategories, 3)"
+                      :key="JSON.stringify(col)"
+                    >
                       <ul class="space-y-2">
                         <li v-for="sub in col" :key="sub.id" class="py-0">
                           <Link
@@ -80,6 +104,7 @@
                         </li>
                       </ul>
                     </div>
+
                   </div>
                 </div>
               </div>
@@ -87,111 +112,139 @@
           </div>
         </nav>
 
-        <!-- Kiri: Search (Left aligned, long) -->
-        <div class="relative header-search w-[36rem] max-w-[50vw] hidden sm:block">
+        <!-- SEARCH (DESKTOP) -->
+        <div class="relative header-search w-[12rem] sm:w-[16rem] md:w-[20rem] lg:w-[30rem] hidden sm:block">
           <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-white/80"></i>
           <input
             v-model="searchQuery"
             type="text"
             placeholder="Cari"
-            class="w-full bg-transparent text-white placeholder-white/70 border-0 border-b-2 border-white/90 focus:border-white outline-none pl-9 pr-3 py-2"
+            class="w-full bg-transparent text-white placeholder-white/70 border-0
+                   border-b-2 border-white/90 focus:border-white outline-none pl-9 pr-3 py-2"
             @focus="openResults"
             @input="debouncedSearch"
           />
-          <!-- Results Dropdown -->
+          
+          <!-- Search results dropdown -->
           <div v-if="searchOpen" class="absolute left-0 top-full mt-2 w-full z-50">
             <div class="bg-white text-gray-800 rounded-md shadow-lg p-2">
               <div class="max-h-72 overflow-y-auto divide-y divide-gray-100">
-                <div v-if="searchLoading" class="py-4 text-center text-sm text-gray-500">Memuat…</div>
+                <div v-if="searchLoading" class="py-4 text-center text-sm">Memuat…</div>
                 <div v-else-if="searchError" class="py-4 text-center text-sm text-red-500">{{ searchError }}</div>
                 <div v-else>
-                  <div v-if="searchQuery.trim() && results.length === 0" class="py-4 text-center text-sm text-gray-500">Tidak ada hasil</div>
+                  <div v-if="searchQuery.trim() && results.length === 0"
+                    class="py-4 text-center text-sm text-gray-500">Tidak ada hasil
+                  </div>
+
                   <Link
                     v-for="(prod, i) in results"
                     :key="prod.id || i"
                     :href="`/products/${prod.slug}`"
                     class="flex items-center gap-3 py-2 px-2 rounded hover:bg-gray-50 transition"
                   >
-                    <img :src="prod.image_url || '/images/placeholder.png'" :alt="prod.name" class="w-10 h-10 object-cover rounded" />
+                    <img :src="prod.image_url || '/images/placeholder.png'"
+                         class="w-10 h-10 object-cover rounded" />
+
                     <div class="flex-1 min-w-0">
                       <p class="text-sm font-medium truncate">{{ prod.name }}</p>
                       <p class="text-xs text-gray-500 truncate">{{ formatPrice(prod.price) }}</p>
                     </div>
+
                     <span :class="[
                       'px-2 py-0.5 rounded-full text-[10px] whitespace-nowrap',
-                      (prod.stock ?? 0) <= 0 ? 'bg-red-100 text-red-700' : ((prod.stock ?? 0) <= 10 ? 'bg-yellow-100 text-yellow-700' : 'bg-green-100 text-green-700')
-                    ]">Stok {{ prod.stock ?? 0 }}</span>
+                      (prod.stock ?? 0) <= 0 ? 'bg-red-100 text-red-700'
+                      : (prod.stock ?? 0) <= 10
+                        ? 'bg-yellow-100 text-yellow-700'
+                        : 'bg-green-100 text-green-700'
+                    ]">
+                      Stok {{ prod.stock ?? 0 }}
+                    </span>
                   </Link>
                 </div>
               </div>
             </div>
           </div>
+
         </div>
       </div>
 
-      <!-- Kanan: Keranjang + Login/Profile -->
-      <div class="flex items-center space-x-10">
-        <!-- Compare Produk -->
-        <Link
-          href="/compare-products"
-          class="flex items-center space-x-2 hover:text-gray-300 cursor-pointer transition"
+      <!-- RIGHT SIDE -->
+      <div class="flex items-center gap-6">
+
+        <!-- Mobile search icon -->
+        <button 
+          class="sm:hidden text-white text-xl"
+          @click="searchOpen = !searchOpen"
         >
-          <img src="/images/compare-icon.png" alt="Compare Produk" class="h-5 w-6">
+          <i class="fas fa-search"></i>
+        </button>
+
+        <!-- Compare -->
+        <Link href="/compare-products" class="hidden sm:flex items-center hover:text-gray-300">
+          <img src="/images/compare-icon.png" class="h-5 w-6">
         </Link>
 
-        <!-- Keranjang -->
-        <Link
-          href="/cart"
-          class="flex items-center space-x-2 hover:text-gray-300 cursor-pointer relative"
-        >
-          <img src="/images/cart-icon.png" alt="Keranjang" class="h-5 w-5">
+        <!-- Cart -->
+        <Link href="/cart" class="relative flex items-center hover:text-gray-300">
+          <img src="/images/cart-icon.png" class="h-5 w-5">
           <span
-          v-if="cartCount > 0"
-          class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center"
-        >
-          {{ cartCount }}
-        </span>
+            v-if="cartCount > 0"
+            class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center"
+          >
+            {{ cartCount }}
+          </span>
         </Link>
 
-        <!-- Jika belum login -->
+        <!-- Auth -->
         <template v-if="!$page.props.auth?.user">
-          <Link href="/login" class="hover:text-gray-300 transition font-medium">Login</Link>
+          <Link href="/login" class="hidden sm:block hover:text-gray-300 font-medium">Login</Link>
         </template>
 
-        <!-- Jika sudah login -->
         <template v-else>
           <div class="relative">
             <button
               @click="toggleDropdown"
-              class="flex items-center gap-2 hover:text-gray-300 transition font-medium focus:outline-none"
+              class="flex items-center gap-2 hover:text-gray-300 font-medium"
             >
-              <span>{{ $page.props.auth.user.name ?? 'Profile' }}</span>
+              <span class="hidden sm:block">{{ $page.props.auth.user.name }}</span>
               <i class="fas fa-user text-lg"></i>
             </button>
 
-            <!-- Dropdown -->
             <div
               v-if="showDropdown"
               class="absolute right-0 mt-2 w-40 bg-white text-gray-800 rounded-md shadow-lg overflow-hidden z-50"
             >
-              <Link
-                href="/user/dashboard"
-                class="block px-4 py-2 hover:bg-gray-100 transition"
-              >
-                Dashboard
-              </Link>
-
-              <button
-                @click="logout"
-                class="block w-full text-left px-4 py-2 hover:bg-gray-100 text-red-600 transition"
-              >
+              <Link href="/user/dashboard" class="block px-4 py-2 hover:bg-gray-100">Dashboard</Link>
+              <button @click="logout" class="block w-full text-left px-4 py-2 text-red-600 hover:bg-gray-100">
                 Logout
               </button>
             </div>
           </div>
         </template>
+
       </div>
     </div>
+
+    <!-- MOBILE MENU -->
+    <transition name="fade">
+      <div 
+        v-if="mobileMenu"
+        class="md:hidden bg-[#183045] text-white w-full px-6 py-4 space-y-4"
+      >
+        <Link href="/shop" class="block py-1">Kategori</Link>
+        <Link href="/compare-products" class="block py-1">Compare Produk</Link>
+        <Link href="/cart" class="block py-1">Keranjang</Link>
+
+        <template v-if="!$page.props.auth?.user">
+          <Link href="/login" class="block py-1">Login</Link>
+        </template>
+        <template v-else>
+          <Link href="/user/dashboard" class="block py-1">Dashboard</Link>
+          <button @click="logout" class="block py-1 text-left text-red-400">Logout</button>
+        </template>
+      </div>
+    </transition>
+
   </header>
 </template>
 
@@ -210,6 +263,7 @@ const cartCount = ref(0)
 const categoryOpen = ref(false)
 const categories = ref([])
 const activeCategoryId = ref(null)
+const mobileMenu = ref(false)
 
 const toggleDropdown = () => {
   showDropdown.value = !showDropdown.value

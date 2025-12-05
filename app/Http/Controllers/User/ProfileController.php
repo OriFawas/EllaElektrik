@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Storage;
 
 class ProfileController extends Controller
 {
@@ -23,7 +24,7 @@ class ProfileController extends Controller
             'nik' => $u->nik,
             'verification_status' => $u->verification_status ?: 'unverified',
             'verification_note' => $u->verification_note,
-            'ktp_path' => $u->ktp_path,
+            'ktp_path' => $u->ktp_path ? Storage::url($u->ktp_path) : null,
         ]);
     }
 

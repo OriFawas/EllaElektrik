@@ -13,12 +13,12 @@ const categoryLink = (name) => {
 
 <template>
   <footer class="bg-[#f3f1ed] text-[#222] py-12 px-6 md:px-16">
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-15">
-      
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
+
       <!-- MAP -->
-      <div class="ml-4">
+      <div class="md:ml-4">
         <h2 class="text-xl font-bold mb-4">Lokasi Kami</h2>
-        <div class="w-full h-64 md:h-72 rounded-lg overflow-hidden shadow-md">
+        <div class="w-full h-64 sm:h-72 md:h-80 rounded-lg overflow-hidden shadow-md">
           <iframe
             class="w-full h-full"
             style="border:0;"
@@ -31,59 +31,51 @@ const categoryLink = (name) => {
       </div>
 
       <!-- KANAN -->
-      <div class="flex flex-col justify-start h-64 md:h-72">
-        <!-- Atas: 3 kolom horizontal -->
-        <div class="grid grid-cols-3 gap-25">
+      <div class="flex flex-col justify-start">
+
+        <!-- 3 Kolom → jadi 1 kolom di HP -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-8">
+          
+          <!-- KATEGORI -->
           <div>
             <h2 class="text-xl font-semibold mb-2 text-gray-700">Kategori</h2>
             <ul class="space-y-1 text-gray-600">
-              <li>
-                <Link :href="categoryLink('Elektronik Rumah Tangga')" class="hover:text-black transition">Elektronik Rumah Tangga</Link>
-              </li>
-              <li>
-                <Link :href="categoryLink('Elektronik Dapur')" class="hover:text-black transition">Elektronik Dapur</Link>
-              </li>
-              <li>
-                <Link :href="categoryLink('Kelistrikan')" class="hover:text-black transition">Kelistrikan</Link>
-              </li>
+              <li><Link :href="categoryLink('Elektronik Rumah Tangga')" class="hover:text-black transition">Elektronik Rumah Tangga</Link></li>
+              <li><Link :href="categoryLink('Elektronik Dapur')" class="hover:text-black transition">Elektronik Dapur</Link></li>
+              <li><Link :href="categoryLink('Kelistrikan')" class="hover:text-black transition">Kelistrikan</Link></li>
             </ul>
           </div>
 
+          <!-- HELP -->
           <div>
-            <h2 class="text-xl font-semibold mb-2 text-gray-700">Help</h2>
+            <h2 class="text-xl font-semibold mb-2 text-gray-700">Bantuan</h2>
             <ul class="space-y-1 text-gray-600">
-              <li>
-                <Link href="/help-center" class="hover:text-black transition">Help Center</Link>
-              </li>
-              <li>
-                <Link href="/garansi" class="hover:text-black transition">Garansi</Link>
-              </li>
-              <li>
-                <Link href="/contact" class="hover:text-black transition">Contact Us</Link>
-              </li>
+              <li><Link href="/help-center" class="hover:text-black transition">Pusat Bantuan</Link></li>
+              <li><Link href="/garansi" class="hover:text-black transition">Garansi</Link></li>
+              <li><Link href="/contact" class="hover:text-black transition">Hubungi Kami</Link></li>
             </ul>
           </div>
 
+          <!-- ABOUT -->
           <div>
-            <h2 class="text-xl font-semibold mb-2 text-gray-700">About Us</h2>
-              <ul class="space-y-1 text-gray-600">
-                <li>
-                  <Link href="/about" class="hover:text-black transition">Visi Misi</Link>
-                </li>
-              </ul>
+            <h2 class="text-xl font-semibold mb-2 text-gray-700">Tentang Kami</h2>
+            <ul class="space-y-1 text-gray-600">
+              <li><Link href="/about" class="hover:text-black transition">Visi Misi</Link></li>
+            </ul>
           </div>
+
         </div>
 
-        <!-- Bawah: Temukan Kami sejajar dengan map -->
-        <div class="mt-25">
+        <!-- TEMUKAN KAMI (bawah) -->
+        <div class="mt-10">
           <h2 class="text-xl font-semibold mb-2 text-gray-700">Temukan Kami</h2>
           <p class="text-gray-600 leading-relaxed">
             Jalan Stasiun Ceper No.940, Ngaglik, Klepu, Kec. Ceper, Kabupaten Klaten,<br>
             Jawa Tengah 57465
           </p>
         </div>
-      </div>
 
+      </div>
     </div>
   </footer>
 </template>

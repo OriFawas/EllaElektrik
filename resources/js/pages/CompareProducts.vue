@@ -73,7 +73,7 @@ const formatPrice = (value) => {
     <!-- Header -->
     <HeaderLayout />
 
-    <main class="container mx-auto px-6 py-10">
+    <main class="w-full max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <h1 class="text-2xl font-bold mb-6 text-center">Perbandingan Produk</h1>
 
       <!-- Controls -->
@@ -85,21 +85,21 @@ const formatPrice = (value) => {
       </div>
 
       <!-- Grid 2 kolom -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
         <!-- Kolom kiri -->
-        <div class="bg-white shadow rounded-xl p-6">
+        <div class="bg-white shadow rounded-xl p-5 sm:p-6 flex flex-col">
           <label class="block font-semibold mb-2">Compare with</label>
 
           <input
             v-model="searchLeft"
             type="text"
             placeholder="Cari produk..."
-            class="w-full border rounded-md p-2 mb-3"
+            class="w-full border rounded-md p-2 text-sm sm:text-base mb-3"
           />
 
           <select
             v-model="selectedLeft"
-            class="w-full border rounded-md p-2 mb-4"
+            class="w-full border rounded-md p-2 text-sm sm:text-base mb-3"
           >
             <option value="">Pilih produk...</option>
             <option
@@ -115,7 +115,7 @@ const formatPrice = (value) => {
             <img
               :src="leftProduct.image"
               :alt="leftProduct.name"
-              class="w-48 h-48 object-cover mx-auto rounded-lg"
+              class="w-32 h-32 sm:w-40 sm:h-40 lg:w-48 lg:h-48 object-cover mx-auto rounded-lg"
             />
             <h2 class="mt-3 font-semibold">{{ leftProduct.name }}</h2>
             <p class="text-gray-500">{{ formatPrice(leftProduct.price) }}</p>

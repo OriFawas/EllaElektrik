@@ -1,9 +1,18 @@
 <template>
     <div class="flex min-h-screen bg-gray-100">
         <!-- Sidebar -->
-        <aside class="w-64 bg-gray-800 text-white flex flex-col sticky top-0 h-screen">
-            <div class="p-4 text-xl font-semibold">Ella Elektrik</div>
-            <nav class="flex-1">
+        <aside
+            class="w-64 bg-[#183045] text-white flex flex-col min-h-screen fixed md:static top-0 left-0
+                    transform transition-transform duration-300
+                    md:translate-x-0 z-50 md:z-auto overflow-y-auto"
+            :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'"
+            >
+            <div class="p-4 pt-6 text-xl font-semibold flex justify-between items-center flex-shrink-0">
+            Ella Elektrik
+            <button class="md:hidden" @click="sidebarOpen = false">✕</button>
+            </div>
+
+            <nav class="flex-1 overflow-y-auto">
                 <ul>
                     <li>
                         <Link
@@ -68,8 +77,13 @@
         <div class="flex-1 flex flex-col">
             <!-- Header -->
             <header class="sticky top-0 z-50 bg-white shadow flex items-center justify-between px-6 py-4">
+                <button class="md:hidden text-2xl" @click="sidebarOpen = true">
+                ☰
+                </button>
+
+
                 <!-- Search -->
-                <div class="flex items-center gap-2 w-1/3">
+                <div class="hidden sm:flex items-center gap-2 w-1/3">
                     <i class="ri-search-line text-gray-400 text-lg"></i>
                     <input
                         type="text"
@@ -103,7 +117,7 @@
                             <span class="inline-flex h-9 w-9 items-center justify-center rounded-full border border-gray-300 bg-gray-100 text-gray-500 text-sm font-medium">
                                 AD
                             </span>
-                            <span class="font-medium text-gray-700">Admin</span>
+                            <span class="hidden sm:block font-medium text-gray-700">Admin</span>
                             <i class="ri-arrow-down-s-line text-gray-600"></i>
                         </div>
 
@@ -113,12 +127,7 @@
                                 v-if="showDropdown"
                                 class="absolute right-0 mt-2 w-48 bg-white shadow-lg rounded-lg border border-gray-200 z-50"
                             >
-                                <Link
-                                    href="/profile"
-                                    class="block px-4 py-2 text-gray-700 hover:bg-gray-100"
-                                >
-                                    Lihat Profil
-                                </Link>
+                                
 
                                 <button
                                     @click="logout"
@@ -133,7 +142,7 @@
             </header>
 
             <!-- Page content -->
-            <main class="p-6 flex-1">
+            <main class="p-4 md:p-6 flex-1 overflow-x-auto">
                 <slot />
             </main>
         </div>
@@ -144,6 +153,7 @@
 import { Link, router, usePage } from '@inertiajs/vue3'
 import { ref, computed } from 'vue'
 
+const sidebarOpen = ref(false)
 const showDropdown = ref(false)
 const page = usePage()
 const currentUrl = computed(() => page.url.split('?')[0]) 

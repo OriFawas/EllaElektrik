@@ -1,21 +1,26 @@
 <template>
+  <AdminLayout>
   <div class="bg-white shadow rounded-lg overflow-hidden">
-    <div class="p-4 flex justify-between items-center border-b">
-      <h2 class="text-lg font-semibold text-gray-800">Products List</h2>
-      <button @click="$emit('open-create')" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm px-4 py-2 rounded-lg font-medium flex items-center gap-1">
-        <i class="ri-add-line"></i> Add Product
+    <!-- Header: Title + Button -->
+    <div class="p-3 md:p-4 flex flex-col md:flex-row justify-between items-start md:items-center border-b gap-3">
+      <h2 class="text-lg md:text-xl font-semibold text-gray-800">Products List</h2>
+      <button @click="$emit('open-create')" class="w-full md:w-auto bg-indigo-600 hover:bg-indigo-700 text-white text-sm px-4 py-2 rounded-lg font-medium flex items-center justify-center md:justify-start gap-1">
+        <i class="ri-add-line"></i> <span class="hidden sm:inline">Add Product</span>
       </button>
     </div>
 
-    <!-- Filters -->
-    <div class="p-4 border-b flex flex-wrap gap-2 items-center">
-      <div class="flex items-center gap-2">
-        <input
-          v-model.trim="searchQuery"
-          type="text"
-          placeholder="Search name, brand, slug..."
-          class="w-64 px-3 py-2 border rounded-lg text-sm"
-        />
+    <!-- Filters: Responsive Grid -->
+    <div class="p-3 md:p-4 border-b space-y-3">
+      <!-- Search Input -->
+      <input
+        v-model.trim="searchQuery"
+        type="text"
+        placeholder="Search name, brand, slug..."
+        class="w-full px-3 py-2 border rounded-lg text-sm"
+      />
+      
+      <!-- Filter Grid: 2 columns on mobile, 5 on desktop -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2">
         <select v-model="categoryFilter" class="px-3 py-2 border rounded-lg text-sm">
           <option value="">All Categories</option>
           <option v-for="c in categories" :key="c" :value="c">{{ c }}</option>
@@ -34,155 +39,151 @@
           <option value="out">Out of Stock</option>
           <option value="low">Low (≤10)</option>
         </select>
-      </div>
-      <div class="ml-auto flex items-center gap-2">
-        <label class="text-sm text-gray-600">Per page</label>
         <select v-model.number="perPage" class="px-3 py-2 border rounded-lg text-sm">
-          <option :value="5">5</option>
-          <option :value="10">10</option>
-          <option :value="20">20</option>
+          <option :value="5">5 per page</option>
+          <option :value="10">10 per page</option>
+          <option :value="20">20 per page</option>
         </select>
       </div>
     </div>
 
-    <table class="min-w-full divide-y divide-gray-100">
-      <thead class="bg-gray-50">
-        <tr>
-          <th class="px-4 py-3 text-left text-sm font-semibold text-gray-600">Product Name</th>
-          <th class="px-4 py-3 text-left text-sm font-semibold text-gray-600">Category</th>
-          <th class="px-4 py-3 text-left text-sm font-semibold text-gray-600">Stock</th>
-          <th class="px-4 py-3 text-left text-sm font-semibold text-gray-600">Price</th>
-          <th class="px-4 py-3 text-left text-sm font-semibold text-gray-600">Status</th>
-          <th class="px-4 py-3 text-right text-sm font-semibold text-gray-600">Action</th>
-        </tr>
-      </thead>
-      <tbody class="divide-y divide-gray-100 bg-white">
-        <tr
-          v-for="(product, index) in paginatedProducts"
-          :key="product.id ?? index"
-          class="hover:bg-gray-50 transition"
-        >
-          <!-- Product name & image -->
-          <td class="px-4 py-3 flex items-center gap-3">
-            <input type="checkbox" class="rounded border-gray-300" />
-            <img
-              :src="product.image_url || placeholder"
-              class="w-10 h-10 rounded-md object-cover bg-gray-100"
-              alt="Product image"
-            />
-            <div class="flex flex-col">
-              <span class="font-medium text-sm text-gray-900">{{ product.name }}</span>
-              <span class="text-xs text-gray-500">{{ product.slug }}</span>
-            </div>
-          </td>
+    <!-- Table Wrapper with horizontal scroll on mobile -->
+    <div class="overflow-x-auto">
+      <table class="min-w-full divide-y divide-gray-100">
+        <thead class="bg-gray-50">
+          <tr>
+            <th class="px-2 md:px-4 py-3 text-left text-xs md:text-sm font-semibold text-gray-600">Product</th>
+            <th class="px-2 md:px-4 py-3 text-left text-xs md:text-sm font-semibold text-gray-600 hidden sm:table-cell">Category</th>
+            <th class="px-2 md:px-4 py-3 text-left text-xs md:text-sm font-semibold text-gray-600 hidden md:table-cell">Stock</th>
+            <th class="px-2 md:px-4 py-3 text-left text-xs md:text-sm font-semibold text-gray-600">Price</th>
+            <th class="px-2 md:px-4 py-3 text-left text-xs md:text-sm font-semibold text-gray-600 hidden lg:table-cell">Status</th>
+            <th class="px-2 md:px-4 py-3 text-right text-xs md:text-sm font-semibold text-gray-600">Action</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-100 bg-white">
+          <tr
+            v-for="(product, index) in paginatedProducts"
+            :key="product.id ?? index"
+            class="hover:bg-gray-50 transition"
+          >
+            <!-- Product name & image -->
+            <td class="px-2 md:px-4 py-3 flex items-center gap-2 md:gap-3 min-w-fit">
+              <input type="checkbox" class="rounded border-gray-300" />
+              <img
+                :src="product.image_url || placeholder"
+                class="w-8 h-8 md:w-10 md:h-10 rounded-md object-cover bg-gray-100"
+                alt="Product image"
+              />
+              <div class="flex flex-col">
+                <span class="font-medium text-xs md:text-sm text-gray-900 truncate max-w-xs">{{ product.name }}</span>
+                <span class="text-xs text-gray-500 hidden sm:inline">{{ product.slug }}</span>
+              </div>
+            </td>
 
-          <!-- Category -->
-          <td class="px-4 py-3 text-sm text-gray-700">
-            {{
-              product.subkategori?.name ||
-              '-'
-            }}
-          </td>
+            <!-- Category (hidden on mobile) -->
+            <td class="px-2 md:px-4 py-3 text-xs md:text-sm text-gray-700 hidden sm:table-cell">
+              {{ product.subkategori?.name || '-' }}
+            </td>
 
-          <!-- Stock -->
-          <td class="px-4 py-3 text-sm">
-            <span
-              v-if="product.stock <= 0"
-              class="text-red-600 font-medium"
-            >Out of Stock</span>
-            <span
-              v-else-if="product.stock <= 10"
-              class="text-yellow-600 font-medium"
-            >{{ product.stock }} Low Stock</span>
-            <span v-else>{{ product.stock }}</span>
-          </td>
+            <!-- Stock (hidden on tablet) -->
+            <td class="px-2 md:px-4 py-3 text-xs md:text-sm hidden md:table-cell">
+              <span
+                v-if="product.stock <= 0"
+                class="text-red-600 font-medium"
+              >Out of Stock</span>
+              <span
+                v-else-if="product.stock <= 10"
+                class="text-yellow-600 font-medium"
+              >{{ product.stock }} Low</span>
+              <span v-else class="text-gray-700">{{ product.stock }}</span>
+            </td>
 
-          <!-- Price -->
-          <td class="px-4 py-3 text-sm font-semibold text-gray-800">
-            {{ formatCurrency(product.price) }}
-          </td>
+            <!-- Price -->
+            <td class="px-2 md:px-4 py-3 text-xs md:text-sm font-semibold text-gray-800">
+              {{ formatCurrency(product.price) }}
+            </td>
 
-          <!-- Status -->
-          <td class="px-4 py-3">
-            <span
-              :class="[
-                'px-2 py-1 rounded-full text-xs font-medium',
-                product.is_active
-                  ? 'bg-green-100 text-green-700'
-                  : 'bg-red-100 text-red-600'
-              ]"
-            >
-              {{ product.is_active ? 'Published' : 'Inactive' }}
-            </span>
-          </td>
-
-          <!-- Actions -->
-          <td class="px-4 py-3 text-right">
-            <div class="flex justify-end gap-2">
-              <button
-                class="p-1 text-gray-500 hover:text-blue-600"
-                title="Edit"
-                @click="$emit('open-edit', product)"
+            <!-- Status (hidden on mobile/tablet) -->
+            <td class="px-2 md:px-4 py-3 hidden lg:table-cell">
+              <span
+                :class="[
+                  'px-2 py-1 rounded-full text-xs font-medium',
+                  product.is_active
+                    ? 'bg-green-100 text-green-700'
+                    : 'bg-red-100 text-red-600'
+                ]"
               >
-                <i class="ri-edit-line"></i>
-              </button>
-              <button
-                class="p-1 text-gray-500 hover:text-red-600"
-                title="Delete"
-                @click="$emit('open-delete', product)"
-              >
-                <i class="ri-delete-bin-line"></i>
-              </button>
+                {{ product.is_active ? 'Published' : 'Inactive' }}
+              </span>
+            </td>
 
-              <!-- Ellipsis button to open full product modal (view/edit/remove) -->
-              <button
-                class="p-1 text-gray-500 hover:text-gray-700"
-                title="More"
-                @click="$emit('open-full', product)"
-              >
-                <span class="text-lg">⋯</span>
-              </button>
-            </div>
-          </td>
-        </tr>
+            <!-- Actions -->
+            <td class="px-2 md:px-4 py-3">
+              <div class="flex justify-end gap-1 md:gap-2">
+                <button
+                  class="p-1 text-gray-500 hover:text-blue-600 text-sm md:text-base"
+                  title="Edit"
+                  @click="$emit('open-edit', product)"
+                >
+                  <i class="ri-edit-line"></i>
+                </button>
+                <button
+                  class="p-1 text-gray-500 hover:text-red-600 text-sm md:text-base"
+                  title="Delete"
+                  @click="$emit('open-delete', product)"
+                >
+                  <i class="ri-delete-bin-line"></i>
+                </button>
+                <button
+                  class="p-1 text-gray-500 hover:text-gray-700 text-sm md:text-base"
+                  title="More"
+                  @click="$emit('open-full', product)"
+                >
+                  <span>⋯</span>
+                </button>
+              </div>
+            </td>
+          </tr>
 
-        <!-- Empty state -->
-        <tr v-if="filteredProducts.length === 0">
-          <td colspan="6" class="px-4 py-8 text-center text-gray-500 text-sm">
-            No products found.
-          </td>
-        </tr>
-      </tbody>
-    </table>
+          <!-- Empty state -->
+          <tr v-if="filteredProducts.length === 0">
+            <td colspan="6" class="px-4 py-8 text-center text-gray-500 text-sm">
+              No products found.
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
 
-    <!-- Footer / Pagination -->
-    <div class="p-4 border-t flex items-center justify-between text-sm text-gray-600">
-      <span>
+    <!-- Footer / Pagination: Responsive -->
+    <div class="p-3 md:p-4 border-t flex flex-col md:flex-row md:items-center md:justify-between gap-3 text-xs md:text-sm text-gray-600">
+      <span class="text-center md:text-left">
         Showing
         {{ startIndex + 1 }}–{{ Math.min(endIndex, filteredProducts.length) }}
         of {{ filteredProducts.length }}
       </span>
-      <div class="flex items-center gap-1">
+      <div class="flex items-center justify-center gap-1 overflow-x-auto">
         <button
-          class="px-2 py-1 border rounded text-gray-600 hover:bg-gray-50"
+          class="px-2 py-1 border rounded text-gray-600 hover:bg-gray-50 text-xs md:text-sm whitespace-nowrap"
           :disabled="page <= 1"
           @click="goPrev"
         >Prev</button>
         <button
           v-for="p in totalPages"
           :key="p"
-          class="px-2 py-1 border rounded"
+          class="px-2 py-1 border rounded text-xs md:text-sm whitespace-nowrap"
           :class="p === page ? 'bg-indigo-600 text-white' : 'text-gray-600 hover:bg-gray-50'"
           @click="goTo(p)"
         >{{ p }}</button>
         <button
-          class="px-2 py-1 border rounded text-gray-600 hover:bg-gray-50"
+          class="px-2 py-1 border rounded text-gray-600 hover:bg-gray-50 text-xs md:text-sm whitespace-nowrap"
           :disabled="page >= totalPages"
           @click="goNext"
         >Next</button>
       </div>
     </div>
   </div>
+  </AdminLayout>
 </template>
 
 <script setup>

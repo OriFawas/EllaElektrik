@@ -15,7 +15,8 @@ const form = {
   address: '',
   nik: '',
   ktpFile: null,
-  ktpName: ''
+  ktpName: '',
+  ktpExisting: null,
 }
 
 const errors = ref({
@@ -46,7 +47,11 @@ const hydrateFromProps = () => {
   form.city = u.city || ''
   form.address = u.address || ''
   form.nik = u.nik || ''
+  form.ktpExisting = u.ktp_path ? u.ktp_path : null
 }
+
+const showKtpPreview = ref(false)
+const ktpPreviewUrl = computed(() => form.ktpExisting)
 
 // Hydrate immediately to avoid blank fields on first paint
 hydrateFromProps()
@@ -228,13 +233,13 @@ const statusMeta = computed(() => {
 </script>
 
 <template>
-  <div class="min-h-screen bg-white flex flex-col pt-20">
+  <div class="min-h-screen bg-white flex flex-col pt-15">
   <HeaderLayout />
   <Head title="Profil Saya" />
   <UserLayout>
     <!-- Container full width -->
-    <div class="bg-white p-8 rounded-lg shadow w-full ">
-      <div class="flex items-center gap-3 mb-6">
+    <div class="bg-white p-4 md:p-8 rounded-lg shadow w-full">
+      <div class="flex flex-col md:flex-row md:items-center md:gap-3 mb-6">
         <h1 class="text-2xl font-semibold">Profil Saya</h1>
 
         <span
@@ -244,14 +249,14 @@ const statusMeta = computed(() => {
           <span :class="['h-2 w-2 rounded-full', statusMeta.dot]"></span>
           {{ statusMeta.label }}
         </span>
-        <div class="ml-3">
+        <div class="ml-0 md:ml-3 mt-3 md:mt-0 w-full md:w-auto">
           <InlineNotice :notice="displayedNotice" @dismiss="dismissNotification" @action="handleNoticeAction" />
         </div>
 
       </div>
 
       <form @submit.prevent="submit" class="space-y-6">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
           <div>
             <label class="text-sm font-medium">Nama Lengkap</label>
             <input v-model="form.name" type="text" class="mt-1 w-full border rounded px-3 py-2" />
@@ -263,7 +268,7 @@ const statusMeta = computed(() => {
           </div>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
           <div>
             <label class="text-sm font-medium">Nomor Telepon</label>
             <input v-model="form.phone" type="text" class="mt-1 w-full border rounded px-3 py-2" />
@@ -277,7 +282,7 @@ const statusMeta = computed(() => {
           </div>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
           <div>
             <label class="text-sm font-medium">Provinsi</label>
             <input v-model="form.province" type="text" class="mt-1 w-full border rounded px-3 py-2" />
@@ -297,20 +302,37 @@ const statusMeta = computed(() => {
         <label class="text-sm font-medium">Upload KTP</label>
 
         <!-- input file, tetap tampil tapi kecil (mirip ukuran KTP) -->
-        <div class="mt-1">
-          <input
-            id="ktp-file-input"
-            type="file"
-            accept=".jpg,.jpeg,.png,.pdf"
-            @change="onFileChange"
-            class="border rounded p-2 w-90 h-13 cursor-pointer"
-          />
-        </div>
+          <!-- Existing file indicator -->
+  <div v-if="form.ktpExisting && !form.ktpName" class="mt-2 p-3 bg-gray-50 border rounded text-sm">
+    <p class="text-gray-700">
+      KTP sudah diupload:
+      <button
+        type="button"
+        @click="showKtpPreview = true"
+        class="text-blue-600 underline ml-1"
+      >
+        Lihat File
+      </button>
 
-        <!-- info file -->
-        <p v-if="form.ktpName" class="text-green-600 text-sm mt-1">
-          File dipilih: {{ form.ktpName }}
-        </p>
+    </p>
+    <p class="text-gray-500 text-xs">Upload baru akan menggantikan file ini.</p>
+  </div>
+
+  <!-- input file -->
+  <div class="mt-2">
+    <input
+      id="ktp-file-input"
+      type="file"
+      accept=".jpg,.jpeg,.png,.pdf"
+      @change="onFileChange"
+      class="border rounded p-2 w-full sm:w-72 cursor-pointer"
+    />
+  </div>
+
+  <!-- new file selected -->
+  <p v-if="form.ktpName" class="text-green-600 text-sm mt-1">
+    File dipilih: {{ form.ktpName }}
+  </p>
       </div>
 
 
@@ -321,6 +343,33 @@ const statusMeta = computed(() => {
         </div>
       </form>
     </div>
+
+    <!-- Modal Preview KTP -->
+<div
+  v-if="showKtpPreview"
+  class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+>
+  <div class="bg-white rounded-lg p-4 max-w-full max-h-full">
+    <div class="flex justify-end">
+      <button @click="showKtpPreview = false" class="text-gray-600 text-lg font-bold">×</button>
+    </div>
+
+    <!-- Jika file berupa gambar -->
+    <img
+      v-if="ktpPreviewUrl && ktpPreviewUrl.match(/\.(jpg|jpeg|png)$/i)"
+      :src="ktpPreviewUrl"
+      class="max-w-[90vw] max-h-[80vh] object-contain rounded"
+    />
+
+        <!-- Jika file PDF -->
+        <iframe
+          v-else
+          :src="ktpPreviewUrl"
+          class="w-[80vw] h-[80vh] rounded"
+        ></iframe>
+      </div>
+    </div>
+
   </UserLayout>
   <FooterLayout />
   </div>
