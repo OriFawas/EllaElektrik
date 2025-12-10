@@ -57,7 +57,12 @@ const ktpPreviewUrl = computed(() => form.ktpExisting)
 hydrateFromProps()
 
 onMounted(hydrateFromProps)
-watch(() => page.props.auth, hydrateFromProps, { deep: true })
+watch(() => page.props.auth, () => {
+  hydrateFromProps()
+  // Also refresh KTP path when auth props update
+  const u = page.props.auth?.user || {}
+  if (u.ktp_path) form.ktpExisting = u.ktp_path
+}, { deep: true })
 
 // Fallback: fetch persisted user profile to ensure fields are hydrated after navigation
 onMounted(async () => {
@@ -72,6 +77,7 @@ onMounted(async () => {
       form.city = u.city ?? form.city
       form.address = u.address ?? form.address
       form.nik = u.nik ?? form.nik
+      form.ktpExisting = u.ktp_path ?? form.ktpExisting
     }
   } catch {}
 })
@@ -139,6 +145,7 @@ const submit = async () => {
       form.city = saved.user.city ?? form.city
       form.address = saved.user.address ?? form.address
       form.nik = saved.user.nik ?? form.nik
+      form.ktpExisting = saved.user.ktp_path ?? form.ktpExisting
     }
     // Profile saved; proceed to optional verification upload if a file is selected
     if (form.ktpFile) {
@@ -159,6 +166,13 @@ const submit = async () => {
         const uerr = await up.json().catch(() => ({}))
         const umsg = uerr?.message || (uerr?.errors ? Object.values(uerr.errors).flat().join(', ') : '')
         throw new Error(umsg || 'Gagal mengirim verifikasi')
+      }
+      // Update KTP path from upload response
+      const uploadResult = await up.json().catch(() => null)
+      if (uploadResult?.ktp_path) {
+        form.ktpExisting = uploadResult.ktp_path
+        form.ktpFile = null
+        form.ktpName = ''
       }
       // Use the inline displayed notice rather than alert
       // show a local flash for immediate feedback

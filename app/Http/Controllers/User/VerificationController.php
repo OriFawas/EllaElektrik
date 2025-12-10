@@ -37,7 +37,7 @@ class VerificationController extends Controller
         return response()->json([
             'message' => 'Verification submitted',
             'verification_status' => $user->verification_status,
-            'ktp_path' => $user->ktp_path,
+            'ktp_path' => $user->ktp_path ? asset($user->ktp_path) : null,
         ]);
     }
 }

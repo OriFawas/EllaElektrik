@@ -24,7 +24,7 @@ class ProfileController extends Controller
             'nik' => $u->nik,
             'verification_status' => $u->verification_status ?: 'unverified',
             'verification_note' => $u->verification_note,
-            'ktp_path' => $u->ktp_path ? Storage::url($u->ktp_path) : null,
+            'ktp_path' => $u->ktp_path ? (str_starts_with($u->ktp_path, 'images/') ? asset($u->ktp_path) : Storage::url($u->ktp_path)) : null,
         ]);
     }
 
@@ -56,6 +56,7 @@ class ProfileController extends Controller
                 'city' => $user->city,
                 'address' => $user->address,
                 'nik' => $user->nik,
+                'ktp_path' => $user->ktp_path ? (str_starts_with($user->ktp_path, 'images/') ? asset($user->ktp_path) : Storage::url($user->ktp_path)) : null,
             ],
         ]);
     }

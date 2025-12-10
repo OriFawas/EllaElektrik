@@ -71,6 +71,10 @@ Route::delete('/admin/products/{product}', [ProductController::class, 'destroy']
     Route::delete('/admin/orders/{order}', [\App\Http\Controllers\Admin\AdminOrderController::class, 'destroy'])
         ->middleware(['auth', 'verified', 'admin'])->name('admin.orders.destroy');
 
+    // Dashboard data endpoint
+    Route::get('/admin/dashboard/data', [\App\Http\Controllers\Admin\DashboardController::class, 'index'])
+        ->middleware(['auth', 'verified', 'admin'])->name('admin.dashboard.data');
+
 // Halaman Shop (user)
 Route::get('/shop/{category}', [ShopController::class, 'index'])
     ->name('shop');

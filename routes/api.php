@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CartController;
 use App\Http\Controllers\Admin\ProductController;
+use App\Http\Controllers\Admin\DashboardController;
 use App\Models\KategoriProduct;
 use App\Models\SubkategoriProduct;
 
@@ -42,6 +43,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     
     // Admin-only endpoints (require admin:* ability)
     Route::prefix('admin')->middleware(\App\Http\Middleware\CheckTokenAbility::class)->group(function () {
+        Route::get('/dashboard', [DashboardController::class, 'index']);
         Route::get('/products', [ProductController::class, 'index']);
         Route::delete('/products/{product}', [ProductController::class, 'destroy']);
 
