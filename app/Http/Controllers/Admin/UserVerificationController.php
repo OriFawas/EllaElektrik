@@ -6,8 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
+use Symfony\Component\HttpFoundation\Response;
 
 class UserVerificationController extends Controller
 {
@@ -18,14 +19,21 @@ class UserVerificationController extends Controller
         $perPage = max(1, min(100, (int) $request->query('per_page', 10)));
 
         $query = User::query()
-            ->select(['id','name','email','phone','province','city','address','nik','ktp_path','verification_status','verification_note','verified_at'])
-            // Exclude admins from the list
-            ->where(function($q){
-                $q->whereNull('role')->orWhere('role', '!=', User::ROLE_ADMIN);
+            ->select([
+                'id','name','email','phone',
+                'province','city','address',
+                'nik','ktp_path',
+                'verification_status','verification_note','verified_at'
+            ])
+            // exclude admin
+            ->where(function ($q) {
+                $q->whereNull('role')
+                  ->orWhere('role', '!=', User::ROLE_ADMIN);
             })
-            ->when(in_array($status, ['pending','verified','rejected','unverified']), function ($q2) use ($status) {
-                $q2->where('verification_status', $status);
-            })
+            ->when(
+                in_array($status, ['pending', 'verified', 'rejected', 'unverified']),
+                fn ($q2) => $q2->where('verification_status', $status)
+            )
             ->when($q !== '', function ($q2) use ($q) {
                 $q2->where(function ($qq) use ($q) {
                     $qq->where('name', 'like', "%$q%")
@@ -35,46 +43,22 @@ class UserVerificationController extends Controller
                        ->orWhere('address', 'like', "%$q%");
                 });
             })
-            // Put pending on top, then newest
             ->orderByRaw("CASE WHEN verification_status = 'pending' THEN 0 ELSE 1 END")
             ->orderByDesc('id');
 
         $paginator = $query->paginate($perPage)->appends($request->query());
 
-        $items = collect($paginator->items())->map(function ($u) {
-            $ktpUrl = null;
-            if ($u->ktp_path) {
-                if (str_starts_with($u->ktp_path, 'images/')) {
-                    $candidate = public_path($u->ktp_path);
-                    if (is_file($candidate)) {
-                        $ktpUrl = asset($u->ktp_path);
-                    }
-                } else {
-                    // legacy storage path: prefer migrating/copying to public images for direct access
-                    $disk = \Illuminate\Support\Facades\Storage::disk('public');
-                    $basename = basename($u->ktp_path);
-                    $publicTarget = 'images/ktp/' . $basename;
-                    $publicPath = public_path($publicTarget);
-                    if (!is_file($publicPath) && $disk->exists($u->ktp_path)) {
-                        @mkdir(dirname($publicPath), 0755, true);
-                        @copy($disk->path($u->ktp_path), $publicPath);
-                    }
-                    if (is_file($publicPath)) {
-                        $ktpUrl = asset($publicTarget);
-                    } elseif ($disk->exists($u->ktp_path)) {
-                        // fallback to storage URL if copy failed
-                        $ktpUrl = $disk->url($u->ktp_path);
-                    }
-                }
-            }
+        $items = collect($paginator->items())->map(function (User $u) {
             return [
                 'id' => $u->id,
                 'name' => $u->name,
                 'email' => $u->email,
                 'phone' => $u->phone,
                 'address' => $u->address,
-                'nik' => $u->nik,
-                'ktp_url' => $ktpUrl,
+                // ✅ MASKING
+                'nik' => $u->nik ? substr($u->nik, 0, 6).'******' : null,
+                // ✅ FLAG SAJA, BUKAN URL
+                'has_ktp' => (bool) $u->ktp_path,
                 'verification_status' => $u->verification_status ?: 'unverified',
                 'verification_note' => $u->verification_note,
                 'verified_at' => $u->verified_at,
@@ -113,7 +97,7 @@ class UserVerificationController extends Controller
     public function reject(Request $request, User $user): JsonResponse
     {
         $data = $request->validate([
-            'reason' => ['required','string','max:2000'],
+            'reason' => ['required', 'string', 'max:2000'],
         ]);
 
         $user->verification_status = 'rejected';
@@ -129,4 +113,37 @@ class UserVerificationController extends Controller
             'verification_note' => $user->verification_note,
         ]);
     }
+
+     public function viewKtp(User $user)
+{
+    abort_if(!$user->ktp_path, 404);
+
+    abort_if(!Storage::disk('local')->exists($user->ktp_path), 404);
+
+    $fullPath = Storage::disk('local')->path($user->ktp_path);
+
+    return response()->file($fullPath, [
+        'Cache-Control' => 'no-store, no-cache, must-revalidate, max-age=0',
+        'Pragma' => 'no-cache',
+        'X-Content-Type-Options' => 'nosniff',
+    ]);
+}
+
+public function viewMyKtp(Request $request)
+{
+    $user = $request->user();
+
+    abort_if(!$user->ktp_path, 404);
+    abort_if(!Storage::disk('local')->exists($user->ktp_path), 404);
+
+    $fullPath = Storage::disk('local')->path($user->ktp_path);
+
+    return response()->file($fullPath, [
+        'Cache-Control' => 'no-store, no-cache, must-revalidate, max-age=0',
+        'Pragma' => 'no-cache',
+        'X-Content-Type-Options' => 'nosniff',
+    ]);
+}
+
+
 }

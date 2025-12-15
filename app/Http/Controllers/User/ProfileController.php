@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Validation\Rule;
-use Illuminate\Support\Facades\Storage;
 
 class ProfileController extends Controller
 {
@@ -24,7 +23,8 @@ class ProfileController extends Controller
             'nik' => $u->nik,
             'verification_status' => $u->verification_status ?: 'unverified',
             'verification_note' => $u->verification_note,
-            'ktp_path' => $u->ktp_path ? (str_starts_with($u->ktp_path, 'images/') ? asset($u->ktp_path) : Storage::url($u->ktp_path)) : null,
+            'ktp_path' => $u->ktp_path ? route('user.ktp.view', ['_ts' => optional($u->updated_at)->timestamp ?? now()->timestamp]) : null,
+            'ktp_filetype' => $u->ktp_path ? strtolower((string) pathinfo($u->ktp_path, PATHINFO_EXTENSION)) : null,
         ]);
     }
 
@@ -56,7 +56,8 @@ class ProfileController extends Controller
                 'city' => $user->city,
                 'address' => $user->address,
                 'nik' => $user->nik,
-                'ktp_path' => $user->ktp_path ? (str_starts_with($user->ktp_path, 'images/') ? asset($user->ktp_path) : Storage::url($user->ktp_path)) : null,
+                'ktp_path' => $user->ktp_path ? route('user.ktp.view', ['_ts' => now()->timestamp]) : null,
+                'ktp_filetype' => $user->ktp_path ? strtolower((string) pathinfo($user->ktp_path, PATHINFO_EXTENSION)) : null,
             ],
         ]);
     }

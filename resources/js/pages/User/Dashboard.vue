@@ -17,6 +17,7 @@ const form = {
   ktpFile: null,
   ktpName: '',
   ktpExisting: null,
+  ktpExistingType: '',
 }
 
 const errors = ref({
@@ -48,10 +49,18 @@ const hydrateFromProps = () => {
   form.address = u.address || ''
   form.nik = u.nik || ''
   form.ktpExisting = u.ktp_path ? u.ktp_path : null
+  form.ktpExistingType = u.ktp_filetype || ''
 }
 
 const showKtpPreview = ref(false)
 const ktpPreviewUrl = computed(() => form.ktpExisting)
+const ktpPreviewIsImage = computed(() => {
+  if (!form.ktpExisting) return false
+  if (form.ktpExistingType) {
+    return ['jpg', 'jpeg', 'png'].includes(form.ktpExistingType.toLowerCase())
+  }
+  return /\.(jpg|jpeg|png)$/i.test(form.ktpExisting)
+})
 
 // Hydrate immediately to avoid blank fields on first paint
 hydrateFromProps()
@@ -62,6 +71,9 @@ watch(() => page.props.auth, () => {
   // Also refresh KTP path when auth props update
   const u = page.props.auth?.user || {}
   if (u.ktp_path) form.ktpExisting = u.ktp_path
+  else form.ktpExisting = null
+  if (u.ktp_filetype) form.ktpExistingType = u.ktp_filetype
+  else form.ktpExistingType = ''
 }, { deep: true })
 
 // Fallback: fetch persisted user profile to ensure fields are hydrated after navigation
@@ -77,7 +89,8 @@ onMounted(async () => {
       form.city = u.city ?? form.city
       form.address = u.address ?? form.address
       form.nik = u.nik ?? form.nik
-      form.ktpExisting = u.ktp_path ?? form.ktpExisting
+      form.ktpExisting = u.ktp_path ?? null
+      form.ktpExistingType = u.ktp_filetype ?? ''
     }
   } catch {}
 })
@@ -145,7 +158,8 @@ const submit = async () => {
       form.city = saved.user.city ?? form.city
       form.address = saved.user.address ?? form.address
       form.nik = saved.user.nik ?? form.nik
-      form.ktpExisting = saved.user.ktp_path ?? form.ktpExisting
+      form.ktpExisting = saved.user.ktp_path ?? null
+      form.ktpExistingType = saved.user.ktp_filetype ?? ''
     }
     // Profile saved; proceed to optional verification upload if a file is selected
     if (form.ktpFile) {
@@ -171,6 +185,7 @@ const submit = async () => {
       const uploadResult = await up.json().catch(() => null)
       if (uploadResult?.ktp_path) {
         form.ktpExisting = uploadResult.ktp_path
+        form.ktpExistingType = uploadResult.ktp_filetype ?? ''
         form.ktpFile = null
         form.ktpName = ''
       }
@@ -370,17 +385,18 @@ const statusMeta = computed(() => {
 
     <!-- Jika file berupa gambar -->
     <img
-      v-if="ktpPreviewUrl && ktpPreviewUrl.match(/\.(jpg|jpeg|png)$/i)"
+      v-if="ktpPreviewUrl && ktpPreviewIsImage"
       :src="ktpPreviewUrl"
       class="max-w-[90vw] max-h-[80vh] object-contain rounded"
     />
 
         <!-- Jika file PDF -->
         <iframe
-          v-else
+          v-else-if="ktpPreviewUrl"
           :src="ktpPreviewUrl"
           class="w-[80vw] h-[80vh] rounded"
         ></iframe>
+        <p v-else class="text-sm text-gray-500">File KTP tidak tersedia.</p>
       </div>
     </div>
 

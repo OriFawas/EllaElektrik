@@ -49,6 +49,19 @@ Route::middleware(['auth', 'verified', 'admin'])->group(function () {
     Route::post('/api/admin/users/{user}/reject', [\App\Http\Controllers\Admin\UserVerificationController::class, 'reject']);
 });
 
+Route::middleware(['auth', 'verified', 'admin'])->group(function () {
+    Route::get(
+        '/admin/users/{user}/ktp',
+        [\App\Http\Controllers\Admin\UserVerificationController::class, 'viewKtp']
+    )->name('admin.users.ktp');
+});
+
+Route::middleware(['auth', 'verified'])->get(
+    '/user/ktp',
+    [\App\Http\Controllers\User\VerificationController::class, 'viewMyKtp']
+)->name('user.ktp.view');
+
+
 // Product CRUD (store / update / destroy)
 Route::post('/admin/products', [ProductController::class, 'store'])
     ->middleware(['auth', 'verified', 'admin'])

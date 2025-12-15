@@ -69,6 +69,13 @@ const removeItem = async (id) => {
   }
 }
 
+const formatCurrency = (value) => {
+  return new Intl.NumberFormat('id-ID', {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0
+  }).format(value)
+}
+
 onMounted(fetchCart)
 </script>
 
@@ -78,39 +85,48 @@ onMounted(fetchCart)
 
     <h1 class="text-2xl font-semibold px-8 pt-8">Pesanan Anda</h1>
 
-    <div class="px-8 grid grid-cols-1 lg:grid-cols-2 gap-10 py-10">
+    <div class="px-8 grid grid-cols-1 lg:grid-cols-3 gap-10 py-10">
 
-      <!-- Bagian Keranjang -->
-      <div class="space-y-6">
-        <div v-if="loading" class="text-gray-500">Memuat keranjang…</div>
-        <div v-else-if="error" class="text-red-500">{{ error }}</div>
-        <div v-else-if="cart.items.length === 0" class="text-gray-500">Keranjangmu kosong.</div>
-
-        <div
-          v-for="item in cart.items"
-          :key="item.id"
-          class="flex gap-4 border-b pb-4"
-        >
-          <img :src="item.image" class="w-24 h-24 object-cover rounded" />
-
-          <div class="flex-1">
-            <p class="font-semibold text-lg">{{ item.name }}</p>
-            <p class="text-sm">Jumlah : {{ item.qty }}</p>
-            <p class="font-semibold mt-1">Rp. {{ Number(item.unit_price || item.unit_price_snapshot || 0).toLocaleString() }}</p>
-          </div>
-
-          <button @click="removeItem(item.id)" class="text-sm text-red-500 hover:underline">
-            Hapus
-          </button>
-        </div>
+      <!-- Bagian Keranjang (Table) -->
+      <div v-if="!loading && cart.items.length > 0" class="lg:col-span-2 overflow-x-auto bg-white border rounded-lg shadow-sm">
+        <table class="w-full text-sm">
+          <thead class="bg-[#183045] border-b">
+            <tr>
+              <th class="px-4 py-3 text-left font-semibold text-white">Produk</th>
+              <th class="px-4 py-3 text-center font-semibold w-24 text-white">Jumlah</th>
+              <th class="px-4 py-3 text-right font-semibold w-28 text-white">Harga Satuan</th>
+              <th class="px-4 py-3 text-right font-semibold w-32 text-white">Total</th>
+              <th class="px-4 py-3 text-center font-semibold w-16 text-white">Aksi</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="item in cart.items" :key="item.id" class="border-b hover:bg-gray-50">
+              <td class="px-4 py-3">
+                <div class="flex items-center gap-3">
+                  <img :src="item.image" class="w-16 h-16 object-cover rounded" />
+                  <span class="font-medium">{{ item.name }}</span>
+                </div>
+              </td>
+              <td class="px-4 py-3 text-center font-medium">{{ item.qty }}</td>
+              <td class="px-4 py-3 text-right">Rp. {{ formatCurrency(Number(item.unit_price || item.unit_price_snapshot || 0)) }}</td>
+              <td class="px-4 py-3 text-right font-semibold">Rp. {{ formatCurrency(Number((item.unit_price || item.unit_price_snapshot || 0) * item.qty)) }}</td>
+              <td class="px-4 py-3 text-center">
+                <button @click="removeItem(item.id)" class="text-red-500 hover:underline text-sm">Hapus</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
+      <div v-else-if="loading" class="lg:col-span-2 text-center text-gray-500 py-6">Memuat keranjang…</div>
+      <div v-else-if="error" class="lg:col-span-2 text-center text-red-500 py-6">{{ error }}</div>
+      <div v-else class="lg:col-span-2 text-center text-gray-500 py-6">Keranjangmu kosong.</div>
 
       <!-- Bagian Informasi Pemesanan -->
-      <div class="border-l px-10">
-        <h2 class="text-xl font-semibold mb-6 text-center">Informasi Pemesanan</h2>
+      <div class="bg-white border rounded-lg shadow-sm p-6">
+        <h2 class="text-lg font-semibold mb-6">Informasi Pemesanan</h2>
 
         <!-- Checkbox -->
-        <label class="flex items-start gap-3 border p-4 cursor-pointer">
+        <label class="flex items-start gap-3 border p-4 rounded cursor-pointer mb-6">
           <input type="checkbox" checked disabled class="mt-1" />
           <div>
             <p class="font-medium">Cash On Delivery</p>
@@ -118,20 +134,19 @@ onMounted(fetchCart)
           </div>
         </label>
 
-        <!-- Perhitungan -->
-        <div class="mt-6 space-y-2 text-sm">
-          <div class="flex justify-between">
-            <span>Subtotal</span>
-            <span>Rp. {{ subtotal.toLocaleString() }}</span>
+        <!-- Perhitungan (Table) -->
+        <div class="space-y-4 mb-6">
+          <div class="flex justify-between items-center">
+            <span class="text-gray-700 font-medium">Subtotal</span>
+            <span class="text-lg font-bold text-gray-800">Rp. {{ formatCurrency(subtotal) }}</span>
           </div>
-          <div class="flex justify-between">
-            <span>Biaya Layanan</span>
-            <span>Rp. {{ serviceFee.toLocaleString() }}</span>
+          <div class="flex justify-between items-center">
+            <span class="text-gray-700 font-medium">Biaya Layanan</span>
+            <span class="text-lg font-bold text-gray-800">Rp. {{ formatCurrency(serviceFee) }}</span>
           </div>
-          <hr />
-          <div class="flex justify-between font-semibold text-lg">
-            <span>Total</span>
-            <span>Rp. {{ total.toLocaleString() }}</span>
+          <div class="flex justify-between items-center border-t pt-4">
+            <span class="text-lg font-bold text-gray-800">Total</span>
+            <span class="text-2xl font-bold text-blue-900">Rp. {{ formatCurrency(total) }}</span>
           </div>
         </div>
 
@@ -139,8 +154,8 @@ onMounted(fetchCart)
         <button
           @click="showConfirm = true"
           :disabled="!codChecked || loading || cart.items.length === 0"
-          :class="codChecked && cart.items.length > 0 ? 'bg-black hover:bg-gray-800' : 'bg-gray-400 cursor-not-allowed'"
-          class="mt-8 w-full py-3 text-center text-white font-semibold block"
+          :class="codChecked && cart.items.length > 0 ? 'bg-[#183045] hover:bg-gray-800' : 'bg-gray-400 cursor-not-allowed'"
+          class="w-full py-3 text-center text-white font-semibold rounded-lg"
         >
           {{ loading ? 'Memproses...' : 'Pesan Sekarang' }}
         </button>
@@ -168,7 +183,7 @@ onMounted(fetchCart)
       </button>
 
       <button
-        class="flex-1 py-2 bg-black text-white rounded"
+        class="flex-1 py-2 bg-[#183045] text-white rounded"
         @click="() => { showConfirm = false; createOrder(); }"
       >
         Ya, Lanjutkan

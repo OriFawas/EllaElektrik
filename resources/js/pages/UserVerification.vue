@@ -194,10 +194,10 @@ watch(status, () => fetchUsers(1))
                 <td class="px-4 py-3 text-gray-700 text-sm">{{ row.address }}</td>
                 <td class="px-4 py-3 text-gray-700">
                   <button
-                    v-if="row.ktp_url"
+                    v-if="row.has_ktp"
                     type="button"
                     class="text-blue-600 underline text-sm hover:text-blue-800"
-                    @click="openPreview(row.ktp_url)"
+                    @click="openPreview(`/admin/users/${row.id}/ktp`)"
                   >Lihat KTP</button>
                   <span v-else class="text-gray-400">—</span>
                 </td>
@@ -237,10 +237,10 @@ watch(status, () => fetchUsers(1))
 
             <div class="flex items-center gap-2 pt-2">
               <button
-                v-if="row.ktp_url"
+                v-if="row.has_ktp"
                 type="button"
                 class="text-xs text-blue-600 underline hover:text-blue-800"
-                @click="openPreview(row.ktp_url)"
+                @click="openPreview(`/admin/users/${row.id}/ktp`)"
               >Lihat KTP</button>
               <span v-else class="text-xs text-gray-400">Tidak ada KTP</span>
             </div>

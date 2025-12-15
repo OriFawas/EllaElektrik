@@ -71,6 +71,13 @@ const removeItem = async (itemId) => {
   } catch (e) { console.error(e) }
 }
 
+const formatCurrency = (value) => {
+  return new Intl.NumberFormat('id-ID', {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0
+  }).format(value)
+}
+
 onMounted(fetchCart)
 </script>
 
@@ -100,72 +107,71 @@ onMounted(fetchCart)
         Keranjangmu kosong.
       </div>
 
-      <div class="px-4 sm:px-6 lg:px-8 grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-10 py-8">
-
-        <!-- Daftar Item -->
-        <div class="space-y-6">
-          <div
-            v-for="item in cart.items"
-            :key="item.id"
-            class="flex gap-4 border-b pb-4"
-          >
-            <img :src="item.image" class="w-20 h-20 sm:w-24 sm:h-24 object-cover rounded">
-
-            <div class="flex-1">
-              <p class="font-semibold text-lg">{{ item.name }}</p>
-              <div class="flex items-center gap-3 text-sm">
-                <button @click="updateQty(item.id, Math.max(1, item.qty - 1))" class="px-2 py-1 border rounded">-</button>
-                <span>Jumlah : {{ item.qty }}</span>
-                <button @click="updateQty(item.id, Math.min(99, item.qty + 1))" class="px-2 py-1 border rounded">+</button>
-              </div>
-              <p class="font-semibold mt-2">Rp. {{ Number(item.unit_price || item.unit_price_snapshot || 0).toLocaleString() }}</p>
-            </div>
-
-            <button @click="removeItem(item.id)" class="text-red-500 text-sm hover:underline">
-              Hapus
-            </button>
-          </div>
+      <div class="px-4 sm:px-6 lg:px-8 grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-10 py-8 auto-rows-max">
+        <!-- Daftar Item (Table) -->
+        <div v-if="!loading && cart.items.length > 0" class="lg:col-span-2 overflow-x-auto bg-white border rounded-lg shadow-sm">
+          <table class="w-full text-sm">
+            <thead class="bg-[#183045] border-b">
+              <tr>
+                <th class="px-4 py-3 text-left font-semibold text-white">Produk</th>
+                <th class="px-4 py-3 text-center font-semibold w-24 text-white">Jumlah</th>
+                <th class="px-4 py-3 text-right font-semibold w-28 text-white">Harga Satuan</th>
+                <th class="px-4 py-3 text-right font-semibold w-32 text-white">Total</th>
+                <th class="px-4 py-3 text-center font-semibold w-16 text-white">Aksi</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="item in cart.items" :key="item.id" class="border-b hover:bg-gray-50">
+                <td class="px-4 py-3">
+                  <div class="flex items-center gap-3">
+                    <img :src="item.image" class="w-16 h-16 object-cover rounded" />
+                    <span class="font-medium">{{ item.name }}</span>
+                  </div>
+                </td>
+                <td class="px-4 py-3 text-center">
+                  <div class="flex items-center justify-center gap-2">
+                    <button @click="updateQty(item.id, Math.max(1, item.qty - 1))" class="px-2 py-1 border rounded hover:bg-gray-100">-</button>
+                    <span class="w-8 text-center font-medium">{{ item.qty }}</span>
+                    <button @click="updateQty(item.id, Math.min(99, item.qty + 1))" class="px-2 py-1 border rounded hover:bg-gray-100">+</button>
+                  </div>
+                </td>
+                <td class="px-4 py-3 text-right">Rp. {{ formatCurrency(Number(item.unit_price || item.unit_price_snapshot || 0)) }}</td>
+                <td class="px-4 py-3 text-right font-semibold">Rp. {{ formatCurrency(Number((item.unit_price || item.unit_price_snapshot || 0) * item.qty)) }}</td>
+                <td class="px-4 py-3 text-center">
+                  <button @click="removeItem(item.id)" class="text-red-500 hover:underline text-sm">Hapus</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
 
-        <!-- Ringkasan Pesanan -->
-        <div v-if="!loading && cart.items.length > 0"
-        class="border-t lg:border-t-0 lg:border-l px-6 lg:px-10 pt-6 lg:pt-0">
-          <h2 class="text-xl font-semibold mb-6 text-center">Ringkasan Pesanan</h2>
+        <!-- Ringkasan Pesanan (Table) -->
+        <div v-if="!loading && cart.items.length > 0" class="bg-white border rounded-lg shadow-sm p-6 h-84">
+          <h2 class="text-lg font-semibold mb-6">Ringkasan Pesanan</h2>
 
-          <div class="text-sm space-y-2 mb-6">
-
-            <div v-for="item in cart.items" :key="item.id" class="flex justify-between items-center">
-              <span>{{ item.name }}</span>
-              <span class="font-medium text-right w-28">Rp. {{ Number(item.line_total).toLocaleString() }}</span>
+          <div class="space-y-4">
+            <div class="flex justify-between items-center">
+              <span class="text-gray-700 font-medium">Subtotal</span>
+              <span class="text-lg font-bold text-gray-800">Rp. {{ formatCurrency(Number(cart.subtotal)) }}</span>
             </div>
 
-            <hr class="my-2" />
-
-            <div class="flex justify-between">
-              <span>Subtotal</span>
-              <span>Rp. {{ Number(cart.subtotal).toLocaleString() }}</span>
+            <div class="flex justify-between items-center">
+              <span class="text-gray-700 font-medium">Biaya Layanan</span>
+              <span class="text-lg font-bold text-gray-800">Rp. 2.000</span>
             </div>
 
-            <div class="flex justify-between">
-              <span>Biaya Layanan</span>
-              <span>Rp. 2.000</span>
-            </div>
-
-            <hr class="my-2" />
-
-            <div class="flex justify-between font-semibold text-lg">
-              <span>Total</span>
-              <span>Rp. {{ (Number(cart.subtotal) + 2000).toLocaleString() }}</span>
+            <div class="flex justify-between items-center border-t pt-6">
+              <span class="text-lg font-bold text-gray-800">Total</span>
+              <span class="text-2xl font-bold text-blue-900">Rp. {{ formatCurrency(Number(cart.subtotal) + 2000) }}</span>
             </div>
           </div>
 
           <Link
             href="/checkout"
-            class="block w-full py-3 text-center text-white font-semibold bg-black hover:bg-gray-800 rounded"
+            class="block w-full py-3 text-center text-white font-semibold bg-[#183045] hover:bg-gray-800 rounded-lg mt-6"
           >
             Selanjutnya
           </Link>
-
         </div>
 
       </div>
