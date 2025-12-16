@@ -8,40 +8,53 @@ use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Validation\ValidationException;
+use App\Rules\Recaptcha;
 
 class LoginRequest extends FormRequest
 {
-    /**
-     * Determine if the user is authorized to make this request.
-     */
     public function authorize(): bool
     {
         return true;
     }
 
-    /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
-     */
     public function rules(): array
     {
-        return [
+        $rules = [
             'email' => ['required', 'string', 'email'],
             'password' => ['required', 'string'],
         ];
+        
+        // Tambahkan validasi reCAPTCHA jika enabled
+        if (config('services.recaptcha.enabled', true)) {
+            $rules['g-recaptcha-response'] = ['required', new Recaptcha];
+        }
+        
+        return $rules;
     }
 
-    /**
-     * Validate the request's credentials and return the user without logging them in.
-     *
-     * @throws \Illuminate\Validation\ValidationException
-     */
+    public function messages(): array
+    {
+        return [
+            'g-recaptcha-response.required' => 'Silakan verifikasi bahwa Anda bukan robot.',
+            'email.required' => 'Alamat email wajib diisi.',
+            'email.email' => 'Format email tidak valid.',
+            'password.required' => 'Password wajib diisi.',
+        ];
+    }
+
+    public function attributes(): array
+    {
+        return [
+            'email' => 'email',
+            'password' => 'password',
+            'g-recaptcha-response' => 'verifikasi keamanan',
+        ];
+    }
+
     public function validateCredentials(): User
     {
         $this->ensureIsNotRateLimited();
 
-        /** @var User|null $user */
         $user = Auth::getProvider()->retrieveByCredentials($this->only('email', 'password'));
 
         if (! $user || ! Auth::getProvider()->validateCredentials($user, $this->only('password'))) {
@@ -57,11 +70,6 @@ class LoginRequest extends FormRequest
         return $user;
     }
 
-    /**
-     * Ensure the login request is not rate limited.
-     *
-     * @throws \Illuminate\Validation\ValidationException
-     */
     public function ensureIsNotRateLimited(): void
     {
         if (! RateLimiter::tooManyAttempts($this->throttleKey(), 5)) {
@@ -80,9 +88,6 @@ class LoginRequest extends FormRequest
         ]);
     }
 
-    /**
-     * Get the rate-limiting throttle key for the request.
-     */
     public function throttleKey(): string
     {
         return $this->string('email')

@@ -36,51 +36,63 @@ class HandleInertiaRequests extends Middleware
      * @return array<string, mixed>
      */
     public function share(Request $request): array
-{
-    [$message, $author] = str(Inspiring::quotes()->random())->explode('-');
+    {
+        [$message, $author] = str(Inspiring::quotes()->random())->explode('-');
 
-    return [
-        ...parent::share($request),
-        'name' => config('app.name'),
-        'quote' => ['message' => trim($message), 'author' => trim($author)],
-        'auth' => [
-            'user' => $request->user() ? [
-                'id' => $request->user()->id,
-                'name' => $request->user()->name,
-                'email' => $request->user()->email,
-                'role' => $request->user()->role,
-                'avatar' => $request->user()->avatar, // If you use avatars
-                'email_verified_at' => $request->user()->email_verified_at,
-                // Profile fields
-                'phone' => $request->user()->phone,
-                'province' => $request->user()->province,
-                'city' => $request->user()->city,
-                'address' => $request->user()->address,
-                'nik' => $request->user()->nik,
-                // Verification fields
-                'verification_status' => $request->user()->verification_status ?: 'unverified',
-                'verification_note' => $request->user()->verification_note,
-                'verified_at' => $request->user()->verified_at,
-                'ktp_path' => $request->user()->ktp_path ? route('user.ktp.view', ['_ts' => optional($request->user()->updated_at)->timestamp ?? now()->timestamp]) : null,
-                'ktp_filetype' => $request->user()->ktp_path ? strtolower((string) pathinfo($request->user()->ktp_path, PATHINFO_EXTENSION)) : null,
-                'created_at' => $request->user()->created_at,
-                'updated_at' => $request->user()->updated_at,
-            ] : null,
-        ],
-        'flash' => [
-            'success' => fn () => $request->session()->get('success'),
-            'error' => fn () => $request->session()->get('error'),
-        ],
-        'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
-        // Categories for header dropdown — include subcategories
-        'categories' => fn () => KategoriProduct::with(['subkategories' => function ($q) { $q->select('id', 'name', 'slug', 'kategori_product_id')->orderBy('name'); }])->select('id', 'name', 'slug')->orderBy('name')->get()->map(function ($c) {
-            return [
-                'id' => $c->id,
-                'name' => $c->name,
-                'slug' => $c->slug,
-                'subkategories' => $c->subkategories->map(function ($s) { return ['id' => $s->id, 'name' => $s->name, 'slug' => $s->slug]; }),
-            ];
-        }),
-    ];
-}
+        return [
+            ...parent::share($request),
+            'name' => config('app.name'),
+            'quote' => ['message' => trim($message), 'author' => trim($author)],
+            
+            // reCAPTCHA configuration - tambahkan di sini
+            'recaptcha' => [
+                'site_key' => config('services.recaptcha.site_key'),
+                'enabled' => config('services.recaptcha.enabled', true),
+            ],
+            
+            'auth' => [
+                'user' => $request->user() ? [
+                    'id' => $request->user()->id,
+                    'name' => $request->user()->name,
+                    'email' => $request->user()->email,
+                    'role' => $request->user()->role,
+                    'avatar' => $request->user()->avatar,
+                    'email_verified_at' => $request->user()->email_verified_at,
+                    'phone' => $request->user()->phone,
+                    'province' => $request->user()->province,
+                    'city' => $request->user()->city,
+                    'address' => $request->user()->address,
+                    'nik' => $request->user()->nik,
+                    'verification_status' => $request->user()->verification_status ?: 'unverified',
+                    'verification_note' => $request->user()->verification_note,
+                    'verified_at' => $request->user()->verified_at,
+                    'ktp_path' => $request->user()->ktp_path ? route('user.ktp.view', ['_ts' => optional($request->user()->updated_at)->timestamp ?? now()->timestamp]) : null,
+                    'ktp_filetype' => $request->user()->ktp_path ? strtolower((string) pathinfo($request->user()->ktp_path, PATHINFO_EXTENSION)) : null,
+                    'created_at' => $request->user()->created_at,
+                    'updated_at' => $request->user()->updated_at,
+                ] : null,
+            ],
+            
+            'flash' => [
+                'success' => fn () => $request->session()->get('success'),
+                'error' => fn () => $request->session()->get('error'),
+            ],
+            
+            'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
+            
+            // Categories for header dropdown — include subcategories
+            'categories' => fn () => KategoriProduct::with(['subkategories' => function ($q) { 
+                $q->select('id', 'name', 'slug', 'kategori_product_id')->orderBy('name'); 
+            }])->select('id', 'name', 'slug')->orderBy('name')->get()->map(function ($c) {
+                return [
+                    'id' => $c->id,
+                    'name' => $c->name,
+                    'slug' => $c->slug,
+                    'subkategories' => $c->subkategories->map(function ($s) { 
+                        return ['id' => $s->id, 'name' => $s->name, 'slug' => $s->slug]; 
+                    }),
+                ];
+            }),
+        ];
+    }
 }

@@ -218,4 +218,13 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/api/cart/items', [CartController::class, 'store']);
     Route::put('/api/cart/items/{itemId}', [CartController::class, 'update']);
     Route::delete('/api/cart/items/{itemId}', [CartController::class, 'destroy']);
+Route::get('/debug-config', function() {
+    return response()->json([
+        'recaptcha_enabled' => config('services.recaptcha.enabled'),
+        'env_value' => env('RECAPTCHA_ENABLED'),
+        'hostname' => request()->getHost(),
+        'is_localhost' => in_array(request()->getHost(), ['localhost', '127.0.0.1']),
+        'suggestion' => 'Set RECAPTCHA_ENABLED=false for localhost'
+    ]);
+});
 });

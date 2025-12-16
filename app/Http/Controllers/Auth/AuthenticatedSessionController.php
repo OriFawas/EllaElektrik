@@ -19,9 +19,14 @@ class AuthenticatedSessionController extends Controller
      */
     public function create(Request $request): Response
     {
+        // Ambil site key dari config untuk dikirim ke frontend
+        $recaptchaSiteKey = config('services.recaptcha.site_key');
+        
         return Inertia::render('auth/Login', [
             'canResetPassword' => Route::has('password.request'),
             'status' => $request->session()->get('status'),
+            'recaptcha_site_key' => $recaptchaSiteKey,
+            'recaptcha_enabled' => config('services.recaptcha.enabled', true),
         ]);
     }
 
@@ -30,34 +35,60 @@ class AuthenticatedSessionController extends Controller
      */
     public function store(LoginRequest $request): RedirectResponse
     {
-        $user = $request->validateCredentials();
+        try {
+            // Validasi dan autentikasi dilakukan oleh LoginRequest
+            $user = $request->validateCredentials();
 
-        if (Features::enabled(Features::twoFactorAuthentication()) && $user->hasEnabledTwoFactorAuthentication()) {
-            $request->session()->put([
-                'login.id' => $user->getKey(),
-                'login.remember' => $request->boolean('remember'),
+            // Cek apakah user memiliki two-factor authentication
+            if (Features::enabled(Features::twoFactorAuthentication()) && $user->hasEnabledTwoFactorAuthentication()) {
+                $request->session()->put([
+                    'login.id' => $user->getKey(),
+                    'login.remember' => $request->boolean('remember'),
+                ]);
+
+                return to_route('two-factor.login');
+            }
+
+            // Login user
+            Auth::login($user, $request->boolean('remember'));
+
+            $request->session()->regenerate();
+
+            // Log login sukses
+            activity()
+                ->causedBy($user)
+                ->withProperties([
+                    'ip' => $request->ip(),
+                    'user_agent' => $request->userAgent(),
+                    'recaptcha_verified' => true,
+                ])
+                ->log('User logged in');
+
+            // Determine intended URL; avoid redirecting to JSON API endpoints (e.g. /api/*)
+            $intended = $request->session()->pull('url.intended');
+            $intendedPath = $intended ? parse_url($intended, PHP_URL_PATH) : null;
+            $isApiIntended = $intendedPath && str_starts_with($intendedPath, '/api/');
+
+            // Choose a safe post-login landing page based on role
+            $fallback = $user->role === 'admin' ? route('dashboard') : route('home');
+
+            if ($intended && ! $isApiIntended) {
+                return redirect()->to($intended);
+            }
+
+            return redirect()->to($fallback);
+
+        } catch (\Exception $e) {
+            // Log error
+            \Log::error('Login failed', [
+                'email' => $request->input('email'),
+                'ip' => $request->ip(),
+                'error' => $e->getMessage(),
             ]);
-
-            return to_route('two-factor.login');
+            
+            // Re-throw the exception to be handled by Laravel
+            throw $e;
         }
-
-        Auth::login($user, $request->boolean('remember'));
-
-        $request->session()->regenerate();
-
-        // Determine intended URL; avoid redirecting to JSON API endpoints (e.g. /api/*)
-        $intended = $request->session()->pull('url.intended');
-        $intendedPath = $intended ? parse_url($intended, PHP_URL_PATH) : null;
-        $isApiIntended = $intendedPath && str_starts_with($intendedPath, '/api/');
-
-        // Choose a safe post-login landing page based on role
-        $fallback = $user->role === 'admin' ? route('dashboard') : route('home');
-
-        if ($intended && ! $isApiIntended) {
-            return redirect()->to($intended);
-        }
-
-        return redirect()->to($fallback);
     }
 
     /**
@@ -65,6 +96,13 @@ class AuthenticatedSessionController extends Controller
      */
     public function destroy(Request $request): RedirectResponse
     {
+        // Log logout activity
+        if (Auth::check()) {
+            activity()
+                ->causedBy(Auth::user())
+                ->log('User logged out');
+        }
+
         Auth::guard('web')->logout();
 
         $request->session()->invalidate();
