@@ -219,3 +219,13 @@ Route::middleware(['auth'])->group(function () {
     Route::put('/api/cart/items/{itemId}', [CartController::class, 'update']);
     Route::delete('/api/cart/items/{itemId}', [CartController::class, 'destroy']);
 });
+
+Route::get('/images/ProductImages/{filename}', function ($filename) {
+    $path = public_path("images/ProductImages/$filename");
+    if (!file_exists($path)) {
+        abort(404);
+    }
+    return Response::file($path, [
+        'Access-Control-Allow-Origin' => '*',
+    ]);
+})->where('filename', '.*');
