@@ -1,7 +1,8 @@
 
+### 1. Clone
 ```bash
-git clone https://github.com/username/nama-repository.git
-cd nama-repository
+git clone https://github.com/OriFawas/EllaElektrik
+cd EllaElektrik
 ```
 
 ### 2. Install Dependency
