@@ -90,6 +90,15 @@ class ProductController extends Controller
             'specs' => $data['specs'] ?? null,
         ]);
 
+        // --- FIX FOR FLUTTER APP ---
+        if ($request->expectsJson()) {
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Product created successfully',
+                'data' => $product
+            ], 201);
+        }
+
         return redirect()->route('admin.products')->with('success', 'Product created');
     }
 
@@ -142,8 +151,17 @@ class ProductController extends Controller
         $product->watt = $data['watt'] ?? null;
         $product->brand = $data['brand'] ?? null;
         $product->subkategori_product_id = $data['subkategori_product_id'] ?? null;
-    $product->specs = $data['specs'] ?? null;
+        $product->specs = $data['specs'] ?? null;
         $product->save();
+
+        // --- FIX FOR FLUTTER APP ---
+        if ($request->expectsJson()) {
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Product updated successfully',
+                'data' => $product
+            ], 200);
+        }
 
         return redirect()->route('admin.products')->with('success', 'Product updated');
     }
@@ -156,17 +174,21 @@ class ProductController extends Controller
         $product = Product::find($id);
         
         if (!$product) {
-            return response()->json([
-                'message' => 'Product not found'
-            ], 404);
+            if ($request->expectsJson()) {
+                 return response()->json(['message' => 'Product not found'], 404);
+            }
+            return redirect()->route('admin.products')->with('error', 'Product not found');
         }
 
         // Optionally remove image file
+        // if($product->image_url && file_exists(public_path($product->image_url))) { ... }
+        
         $product->delete();
 
         // Check if request expects JSON (API) or redirect (web)
         if ($request->expectsJson()) {
             return response()->json([
+                'status' => 'success',
                 'message' => 'Product deleted successfully'
             ]);
         }

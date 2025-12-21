@@ -142,6 +142,120 @@
 					},
 					"response": []
 				}
+					,
+					{
+						"name": "Update Product",
+						"event": [
+							{
+								"listen": "test",
+								"script": {
+									"exec": [
+										"pm.test('Status is 2xx or 302', function () {",
+										"    pm.expect(pm.response.code).to.be.oneOf([200,201,202,204,302]);",
+										"});",
+										"if (pm.response.code >= 200 && pm.response.code < 300) {",
+										"    var json = pm.response.json();",
+										"    pm.test('Response has id', function(){ pm.expect(json).to.have.property('id'); });",
+										"}"
+									],
+									"type": "text/javascript"
+								}
+							}
+						],
+						"request": {
+							"auth": {
+								"type": "bearer",
+								"bearer": [
+									{
+										"key": "token",
+										"value": "{{api_token}}",
+										"type": "string"
+									}
+								]
+							},
+							"method": "POST",
+							"header": [
+								{
+									"key": "Accept",
+									"value": "application/json"
+								}
+							],
+							"body": {
+								"mode": "formdata",
+								"formdata": [
+									{
+										"key": "_method",
+										"value": "PUT",
+										"type": "text"
+									},
+									{
+										"key": "name",
+										"value": "Updated name",
+										"type": "text"
+									},
+									{
+										"key": "price",
+										"value": "123456",
+										"type": "text"
+									},
+									{
+										"key": "stock",
+										"value": "10",
+										"type": "text"
+									},
+									{
+										"key": "is_active",
+										"value": "1",
+										"type": "text"
+									},
+									{
+										"key": "subkategori_product_id",
+										"value": "1",
+										"type": "text"
+									},
+									{
+										"key": "watt",
+										"value": "50",
+										"type": "text"
+									},
+									{
+										"key": "brand",
+										"value": "BrandX",
+										"type": "text"
+									},
+									{
+										"key": "specs[0][key]",
+										"value": "Voltage",
+										"type": "text"
+									},
+									{
+										"key": "specs[0][value]",
+										"value": "220V",
+										"type": "text"
+									},
+									{
+										"key": "image",
+										"type": "file",
+										"src": ""
+									}
+								]
+							},
+							"url": {
+								"raw": "{{base_url}}/admin/products/:productId",
+								"host": ["{{base_url}}"],
+								"path": ["admin", "products", ":productId"],
+								"variable": [
+									{
+										"key": "productId",
+										"value": "123",
+										"description": "Product ID to update"
+									}
+								]
+							},
+							"description": "Update product (multipart/form-data). Use _method=PUT to spoof PUT when uploading files."
+						},
+						"response": []
+					}
 			]
 		},
 		{

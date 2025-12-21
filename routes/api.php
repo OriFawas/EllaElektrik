@@ -46,6 +46,9 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::get('/dashboard', [DashboardController::class, 'index']);
         Route::get('/products', [ProductController::class, 'index']);
         Route::delete('/products/{product}', [ProductController::class, 'destroy']);
+        // Support update via API (PUT or POST + _method=PUT) for admin clients
+        Route::match(['put', 'post'], '/products/{product}', [ProductController::class, 'update']);
+        Route::post('/products', [ProductController::class, 'store']);
 
         // Taxonomy lists for filters
         Route::get('/categories', function () {
