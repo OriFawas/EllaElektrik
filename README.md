@@ -1,15 +1,58 @@
-Build Instruction 
 
-composer update
+```bash
+git clone https://github.com/username/nama-repository.git
+cd nama-repository
+```
 
-copy .env.example .env
+### 2. Install Dependency
 
+Pastikan **Composer** sudah terinstall, lalu jalankan:
+
+```bash
+composer install
+```
+
+### 3. Buat File Environment
+
+Salin file `.env.example` menjadi `.env`:
+
+```bash
+cp .env.example .env
+```
+
+### 4. Konfigurasi File `.env`
+
+Sesuaikan konfigurasi berikut di file `.env`:
+
+* `APP_NAME`
+* `APP_URL`
+* `DB_DATABASE`
+* `DB_USERNAME`
+* `DB_PASSWORD`
+
+### 5. Generate Application Key
+
+```bash
+php artisan key:generate
+```
+
+### 6. Jalankan Migrasi Database
+
+```bash
 php artisan migrate
+```
 
-php artisan db:seed
+### 7. Jalankan Server Lokal
 
-npm run build
-
+```bash
+php artisan serve
 npm run dev
+```
 
-php artian serve
+Aplikasi dapat diakses melalui:
+
+```
+http://127.0.0.1:8000
+```
+
+---
